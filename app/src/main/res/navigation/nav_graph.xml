@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/home_dest">
+
+    <fragment
+        android:id="@+id/home_dest"
+        android:name="com.example.android.fitstreak.ProgressTrack.DailyProgressFragment"
+        android:label="@string/home_dest_label"
+        tools:layout="@layout/fragment_daily_progress" />
+    <fragment
+        android:id="@+id/recipe_dest"
+        android:name="com.example.android.fitstreak.Recipe.RecipesFragment"
+        android:label="@string/recipe_dest_label"
+        tools:layout="@layout/fragment_recipes" />
+    <fragment
+        android:id="@+id/dashboard_dest"
+        android:name="com.example.android.fitstreak.Dashboard.DashboardFragment"
+        android:label="@string/dashboard_dest_label"
+        tools:layout="@layout/fragment_dashboard" />
+</navigation>

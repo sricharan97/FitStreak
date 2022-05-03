@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_dest_label">Daily Goals</string>
+    <string name="recipe_dest_label">Recipes</string>
+    <string name="dashboard_dest_label">Dashboard</string>
+</resources>

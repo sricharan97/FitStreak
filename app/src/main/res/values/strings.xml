@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">FitStreak</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="home">Home</string>
+    <string name="recipe">Recipes</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="home_dest_label">Daily Goals</string>
+    <string name="recipe_dest_label">Recipes</string>
+    <string name="dashboard_dest_label">Dashboard</string>
 </resources>
