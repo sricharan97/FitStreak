@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="home">Home</string>
+    <string name="recipe">Recipes</string>
+    <string name="dashboard">Dashboard</string>
     <string name="home_dest_label">Daily Goals</string>
     <string name="recipe_dest_label">Recipes</string>
     <string name="dashboard_dest_label">Dashboard</string>
+    <string name="sign_in_text">sign in with email</string>
+    <string name="below_sign_in_text">OR</string>
+    <string name="onboarding_dest_label">Onboarding</string>
+    <string name="sign_in_image_desc">A picture of aspiring fit family</string>
+    <string name="welcome_fragment_label">Welcome</string>
+    <string name="goal_selection_label">Goals</string>
 </resources>

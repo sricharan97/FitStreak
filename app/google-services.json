@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "897849033967",
+    "project_id": "fitstreak-dfc30",
+    "storage_bucket": "fitstreak-dfc30.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897849033967:android:79c61b677692cc2b82c71a",
+        "android_client_info": {
+          "package_name": "com.example.android.fitstreak"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "897849033967-fic4l4vu4qi1f7jpr1ktea7t4186hvae.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.android.fitstreak",
+            "certificate_hash": "9706bac3ca213d2d7d886cbdcc1e04c5f1afec8f"
+          }
+        },
+        {
+          "client_id": "897849033967-70l8lsthoibojd0qvnaiq3qgt9neqogu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZOQ_qhV7iRQbLSMd8UWjhJ5569ASPJxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "897849033967-70l8lsthoibojd0qvnaiq3qgt9neqogu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

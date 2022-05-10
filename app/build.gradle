@@ -1,10 +1,16 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'androidx.navigation.safeargs'
+    id 'com.google.gms.google-services'
 }
 
 android {
     compileSdk 31
+
+    buildFeatures {
+        viewBinding = true
+    }
 
     defaultConfig {
         applicationId "com.example.android.fitstreak"
@@ -37,6 +43,18 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+
+    // Declare the dependencies for the desired Firebase products
+    // For example, declare the dependencies for Firebase Authentication and Cloud Firestore
+    implementation ("com.firebaseui:firebase-ui-auth:$firebase_ui_auth_version")
+
+    //Separately declaring google play service auth due to issues with target sdk 31 for default version
+    implementation ("com.google.android.gms:play-services-auth:$google_services_auth_version")
+
+    //Constraint Layout
+    implementation("androidx.constraintlayout:constraintlayout:$constraint_layout_version")
+
 
     // Testing Navigation
     androidTestImplementation("androidx.navigation:navigation-testing:$nav_version")
