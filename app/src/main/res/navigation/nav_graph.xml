@@ -5,59 +5,37 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/home_dest">
 
-    <action
-        android:id="@+id/action_global_home_dest2"
-        app:destination="@id/home_dest"
-        app:popUpTo="@id/home_dest" />
-
     <fragment
         android:id="@+id/home_dest"
-        android:name="com.example.android.fitstreak.ProgressTrack.DailyProgressFragment"
+        android:name="com.example.android.fitstreak.Main.ProgressTrack.DailyProgressFragment"
         android:label="@string/home_dest_label"
         tools:layout="@layout/fragment_daily_progress">
         <action
-            android:id="@+id/action_home_dest_to_loginFragment"
-            app:destination="@id/loginFragment"
-            app:popUpTo="@id/home_dest"
-            app:popUpToInclusive="true" />
+            android:id="@+id/action_home_dest_to_authenticationActivity"
+            app:destination="@id/authenticationActivity"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/authenticationActivity" />
     </fragment>
     <fragment
         android:id="@+id/recipe_dest"
-        android:name="com.example.android.fitstreak.Recipe.RecipesFragment"
+        android:name="com.example.android.fitstreak.Main.Recipe.RecipesFragment"
         android:label="@string/recipe_dest_label"
         tools:layout="@layout/fragment_recipes" />
     <fragment
         android:id="@+id/dashboard_dest"
-        android:name="com.example.android.fitstreak.Dashboard.DashboardFragment"
+        android:name="com.example.android.fitstreak.Main.Dashboard.DashboardFragment"
         android:label="@string/dashboard_dest_label"
-        tools:layout="@layout/fragment_dashboard" />
-    <fragment
-        android:id="@+id/loginFragment"
-        android:name="com.example.android.fitstreak.Onboarding.LoginFragment"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_login">
+        tools:layout="@layout/fragment_dashboard">
         <action
-            android:id="@+id/action_loginFragment_to_onboarding_flow"
-            app:destination="@id/onboarding_flow" />
+            android:id="@+id/action_dashboard_dest_to_authenticationActivity"
+            app:destination="@id/authenticationActivity"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/authenticationActivity" />
     </fragment>
-    <navigation
-        android:id="@+id/onboarding_flow"
-        android:label="@string/onboarding_dest_label"
-        app:startDestination="@id/welcomeFragment">
-        <fragment
-            android:id="@+id/welcomeFragment"
-            android:name="com.example.android.fitstreak.Onboarding.WelcomeFragment"
-            android:label="@string/welcome_fragment_label"
-            tools:layout="@layout/fragment_welcome">
-            <action
-                android:id="@+id/action_welcomeFragment_to_goalSelectionFragment"
-                app:destination="@id/goalSelectionFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/goalSelectionFragment"
-            android:name="com.example.android.fitstreak.Onboarding.GoalSelectionFragment"
-            android:label="@string/goal_selection_label"
-            tools:layout="@layout/fragment_goal_selection" />
-    </navigation>
+    <activity
+        android:id="@+id/authenticationActivity"
+        android:name="com.example.android.fitstreak.Authentication.AuthenticationActivity"
+        android:label="activity_authentication"
+        tools:layout="@layout/activity_authentication" />
 
 </navigation>

@@ -4,19 +4,36 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/goal_view_background.xml" value="0.101" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_baseline_directions_walk_24.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_baseline_navigate_next_24.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_baseline_thumb_up_24.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_exercise_goal.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_fit_streak_logo.xml" value="0.184" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_home.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_home_outline.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_onboarding_screen.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_outline_dashboard.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_recipe_outline.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_sign_up_logo.xml" value="0.101" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_sleep_goal.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_step_goal.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_water_glass.xml" value="0.13" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_water_glass_icon.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/activity_authentication.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/activity_main.xml" value="0.22" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/custom_login_layout.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_daily_progress.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_dashboard.xml" value="0.1" />
-        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_goal_selection.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_goal_selection.xml" value="0.22" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_hello.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_login.xml" value="0.13333333333333333" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_recipes.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_welcome.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/menu/bottom_nav_menu.xml" value="0.17552083333333332" />
+        <entry key="..\:/Users/srich/.gradle/caches/transforms-3/0df2ad0c73f8a4c4314b3582b811f865/transformed/play-services-base-18.0.1/res/drawable/common_google_signin_btn_text_disabled.xml" value="0.101" />
+        <entry key="..\:/Users/srich/.gradle/caches/transforms-3/0f7a5e89e9832a3f8b54f1c59efc87fe/transformed/firebase-ui-auth-8.0.0/res/drawable/fui_ic_phone_white_24dp.xml" value="0.101" />
       </map>
     </option>
   </component>

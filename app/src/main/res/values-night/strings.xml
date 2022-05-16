@@ -12,4 +12,20 @@
     <string name="sign_in_image_desc">A picture of aspiring fit family</string>
     <string name="welcome_fragment_label">Welcome</string>
     <string name="goal_selection_label">Goals</string>
+    <string name="welcome_text">Hello there! Excited to track your fitness journey?</string>
+    <string name="goal_selection_text_value">Let\'s get started by adding some goals</string>
+    <string name="step_text_value">Steps</string>
+    <string name="water_text_value">Glasses</string>
+    <string name="goal_selection_button_text">ALL SET</string>
+    <string name="sleep_text_value">Sleep</string>
+    <string name="exercise_text_value">Exercise</string>
+    <string name="signup_google_button_desc">Sign in via google</string>
+    <string name="signup_phone_button_desc">Sign in via phone number</string>
+    <string name="goal_sel_step_icon_desc">icon to indicate step count</string>
+    <string name="goal_sel_water_glass_icon_desc">icon to indicate water glass</string>
+    <string name="goal_sel_exercise_icon_desc">dumbbell icon to indicate the exercise goal</string>
+    <string name="goal_sel_sleep_icon_desc">icon to indicate the sleep goal</string>
+    <string name="app_logo_img_desc">Image representing the app logo with a measuring scale on the heart</string>
+    <string name="login_enter_button">Enter</string>
+    <string name="welcome_image_desc">Image with a person taking calculations of different physical activities</string>
 </resources>

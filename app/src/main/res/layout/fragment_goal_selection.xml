@@ -1,13 +1,267 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/goal_selection_constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Onboarding.GoalSelectionFragment">
+    tools:context=".Authentication.Onboarding.GoalSelectionFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:id="@+id/goal_selection_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/goal_selection_text_margin"
+        android:layout_marginEnd="@dimen/goal_selection_text_margin"
+        android:text="@string/goal_selection_text_value"
+        android:textSize="@dimen/goal_selection_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.05" />
 
-</FrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/step_view"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/goal_view_height"
+        android:layout_marginStart="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginTop="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginEnd="@dimen/goal_selection_goal_view_margin"
+        android:background="@drawable/goal_view_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goal_selection_text"
+        app:layout_constraintVertical_bias="0.05">
+
+
+        <ImageView
+            android:id="@+id/step_icon"
+            android:layout_width="@dimen/goal_selection_goal_icon_size"
+            android:layout_height="@dimen/goal_selection_goal_icon_size"
+            android:contentDescription="@string/goal_sel_step_icon_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_step_goal" />
+
+        <TextView
+            android:id="@+id/step_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:text="@string/step_text_value"
+            android:textSize="@dimen/goals_text_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/step_count_picker"
+            app:layout_constraintHorizontal_bias="0.2"
+            app:layout_constraintStart_toEndOf="@+id/step_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <NumberPicker
+            android:id="@+id/step_count_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:layout_marginEnd="@dimen/goal_selection_goal_content_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/glass_view"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/goal_view_height"
+        android:layout_marginStart="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginTop="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginEnd="@dimen/goal_selection_goal_view_margin"
+        android:background="@drawable/goal_view_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goal_selection_text"
+        app:layout_constraintVertical_bias="0.3">
+
+
+        <ImageView
+            android:id="@+id/glass_icon"
+            android:layout_width="@dimen/goal_selection_goal_icon_size"
+            android:layout_height="@dimen/goal_selection_goal_icon_size"
+            android:contentDescription="@string/goal_sel_water_glass_icon_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_water_glass" />
+
+        <TextView
+            android:id="@+id/water_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:text="@string/water_text_value"
+            android:textSize="@dimen/goals_text_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/water_glass_picker"
+            app:layout_constraintHorizontal_bias="0.2"
+            app:layout_constraintStart_toEndOf="@+id/glass_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <NumberPicker
+            android:id="@+id/water_glass_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:layout_marginEnd="@dimen/goal_selection_goal_content_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/sleep_view"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/goal_view_height"
+        android:layout_marginStart="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginTop="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginEnd="@dimen/goal_selection_goal_view_margin"
+        android:background="@drawable/goal_view_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goal_selection_text"
+        app:layout_constraintVertical_bias="0.55">
+
+
+        <ImageView
+            android:id="@+id/sleep_icon"
+            android:layout_width="@dimen/goal_selection_goal_icon_size"
+            android:layout_height="@dimen/goal_selection_goal_icon_size"
+            android:contentDescription="@string/goal_sel_sleep_icon_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_sleep_goal" />
+
+        <TextView
+            android:id="@+id/sleep_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:text="@string/sleep_text_value"
+            android:textSize="@dimen/goals_text_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/sleep_hour_picker"
+            app:layout_constraintHorizontal_bias="0.2"
+            app:layout_constraintStart_toEndOf="@+id/sleep_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <NumberPicker
+            android:id="@+id/sleep_hour_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:layout_marginEnd="@dimen/goal_selection_goal_content_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/exercise_view"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/goal_view_height"
+        android:layout_marginStart="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginTop="@dimen/goal_selection_goal_view_margin"
+        android:layout_marginEnd="@dimen/goal_selection_goal_view_margin"
+        android:background="@drawable/goal_view_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/goal_selection_text"
+        app:layout_constraintVertical_bias="0.8">
+
+
+        <ImageView
+            android:id="@+id/exercise_icon"
+            android:layout_width="@dimen/goal_selection_goal_icon_size"
+            android:layout_height="@dimen/goal_selection_goal_icon_size"
+            android:contentDescription="@string/goal_sel_exercise_icon_desc"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_exercise_goal" />
+
+        <TextView
+            android:id="@+id/exercise_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:text="@string/exercise_text_value"
+            android:textSize="@dimen/goals_text_size"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/exercise_cal_picker"
+            app:layout_constraintHorizontal_bias="0.2"
+            app:layout_constraintStart_toEndOf="@+id/exercise_icon"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <NumberPicker
+            android:id="@+id/exercise_cal_picker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_goal_content_margin"
+            android:layout_marginEnd="@dimen/goal_selection_goal_content_margin"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/goal_selection_done_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/goal_selection_goal_content_margin"
+        android:text="@string/goal_selection_button_text"
+        app:icon="@drawable/ic_baseline_thumb_up_24"
+        app:iconGravity="textEnd"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.95" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
