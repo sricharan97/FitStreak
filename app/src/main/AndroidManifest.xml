@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.android.fitstreak">
+    package="com.apptimistiq.android.fitstreak">
 
     <application
         android:allowBackup="true"
@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FitStreak">
         <activity
-            android:name=".Authentication.AuthenticationActivity"
+            android:name="com.apptimistiq.android.fitstreak.Authentication.AuthenticationActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -18,7 +18,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Main.MainActivity"></activity>
+        <activity android:name="com.apptimistiq.android.fitstreak.Main.MainActivity"></activity>
     </application>
 
 </manifest>

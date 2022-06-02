@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".Authentication.Onboarding.LoginFragment">
+    tools:context="com.apptimistiq.android.fitstreak.Authentication.Onboarding.LoginFragment">
 
     <!-- TODO: add animation to this screen -->
     <ImageView

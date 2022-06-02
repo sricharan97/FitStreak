@@ -8,6 +8,7 @@ buildscript {
         google_services_version = "4.3.10"
         firebase_ui_auth_version = "8.0.0"
         google_services_auth_version = "20.2.0"
+        google_services_fitness_version = "21.1.0"
     }
 
     dependencies {

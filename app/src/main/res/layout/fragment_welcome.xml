@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:backgroundTint="@color/primary"
-    tools:context=".Authentication.Onboarding.WelcomeFragment">
+    tools:context="com.apptimistiq.android.fitstreak.Authentication.Onboarding.WelcomeFragment">
 
     <TextView
         android:id="@+id/welcome_text"

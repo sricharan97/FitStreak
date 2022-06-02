@@ -1,12 +1,12 @@
-package com.example.android.fitstreak.Main
+package com.apptimistiq.android.fitstreak.Main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import com.example.android.fitstreak.R
-import com.example.android.fitstreak.databinding.ActivityMainBinding
+import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

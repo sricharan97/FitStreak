@@ -1,4 +1,4 @@
-package com.example.android.fitstreak.Authentication.Onboarding
+package com.apptimistiq.android.fitstreak.Authentication.Onboarding
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.android.fitstreak.databinding.FragmentGoalSelectionBinding
+import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
 
 
 private const val WATER_GLASS_MAX = 100

@@ -1,4 +1,4 @@
-package com.example.android.fitstreak.Authentication.Onboarding
+package com.apptimistiq.android.fitstreak.Authentication.Onboarding
 
 import android.app.Activity.RESULT_OK
 import android.os.Bundle
@@ -8,8 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.example.android.fitstreak.R
-import com.example.android.fitstreak.databinding.FragmentLoginBinding
+import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.databinding.FragmentLoginBinding
 import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
