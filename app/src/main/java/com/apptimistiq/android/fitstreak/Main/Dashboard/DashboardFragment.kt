@@ -5,10 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.databinding.FragmentDashboardBinding
 
 
 class DashboardFragment : Fragment() {
+
+    private lateinit var binding: FragmentDashboardBinding
 
 
     override fun onCreateView(
@@ -16,7 +18,8 @@ class DashboardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_dashboard, container, false)
+        binding = FragmentDashboardBinding.inflate(layoutInflater, container, false)
+        return binding.root
     }
 
 

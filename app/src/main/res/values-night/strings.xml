@@ -28,4 +28,6 @@
     <string name="app_logo_img_desc">Image representing the app logo with a measuring scale on the heart</string>
     <string name="login_enter_button">Enter</string>
     <string name="welcome_image_desc">Image with a person taking calculations of different physical activities</string>
+    <string name="permission_denial_text">This app needs the Activity recognition permission in order to track all your activities</string>
+    <string name="snackbar_action">OK</string>
 </resources>
