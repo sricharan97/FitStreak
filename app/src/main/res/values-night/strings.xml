@@ -29,5 +29,8 @@
     <string name="login_enter_button">Enter</string>
     <string name="welcome_image_desc">Image with a person taking calculations of different physical activities</string>
     <string name="permission_denial_text">This app needs the Activity recognition permission in order to track all your activities</string>
-    <string name="snackbar_action">OK</string>
+    <string name="activity_permission_denied">Your activities cannot be tracked as it requires permission for activity recognition</string>
+    <string name="ok">OK</string>
+    <string name="permission_rationale_dialog">The Activity recognition permission is used to track all your physical activities in the app</string>
+
 </resources>

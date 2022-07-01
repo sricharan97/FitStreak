@@ -4,12 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.databinding.FragmentWelcomeBinding
 
-//import com.example.android.fitstreak.databinding.FragmentWelcomeBinding
 
-class WelcomeFragment : androidx.fragment.app.Fragment() {
+class WelcomeFragment : Fragment() {
 
 
     private lateinit var binding: FragmentWelcomeBinding
