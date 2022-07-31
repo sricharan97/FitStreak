@@ -1,11 +1,14 @@
-package com.apptimistiq.android.fitstreak.Authentication.Onboarding
+package com.apptimistiq.android.fitstreak.authentication.onboarding
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
+import com.apptimistiq.android.fitstreak.authentication.GoalType
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
 
 
@@ -19,6 +22,8 @@ class GoalSelectionFragment : Fragment() {
 
 
     private lateinit var binding: FragmentGoalSelectionBinding
+
+    private val viewModel: AuthenticationViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,6 +65,7 @@ class GoalSelectionFragment : Fragment() {
 
             setOnValueChangedListener { picker, oldVal, newVal ->
                 //TODO: read the value from the picker and store it to the viewmodel
+                viewModel.saveGoal(GoalType.STEP, newVal)
             }
         }
     }
@@ -73,6 +79,8 @@ class GoalSelectionFragment : Fragment() {
             wrapSelectorWheel = true
             setOnValueChangedListener { picker, oldVal, newVal ->
                 //TODO: read the value from the picker and store it to the viewmodel
+                viewModel.saveGoal(GoalType.WATER, newVal)
+
             }
         }
 
@@ -87,6 +95,8 @@ class GoalSelectionFragment : Fragment() {
             wrapSelectorWheel = true
             setOnValueChangedListener { picker, oldVal, newVal ->
                 //TODO: read the value from the picker and store it to the viewmodel
+                viewModel.saveGoal(GoalType.SLEEP, newVal)
+
             }
         }
     }
@@ -103,6 +113,8 @@ class GoalSelectionFragment : Fragment() {
             displayedValues = pickerValuesStr
             setOnValueChangedListener { picker, oldVal, newVal ->
                 //TODO: read the value from the picker and store it to the viewmodel
+                viewModel.saveGoal(GoalType.EXERCISE, newVal)
+
             }
         }
     }

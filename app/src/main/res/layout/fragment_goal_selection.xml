@@ -7,7 +7,7 @@
     android:id="@+id/goal_selection_constraint_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.apptimistiq.android.fitstreak.Authentication.Onboarding.GoalSelectionFragment">
+    tools:context="com.apptimistiq.android.fitstreak.authentication.onboarding.GoalSelectionFragment">
 
     <TextView
         android:id="@+id/goal_selection_text"

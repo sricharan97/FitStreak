@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.apptimistiq.android.fitstreak.Authentication.AuthenticationActivity">
+    tools:context="com.apptimistiq.android.fitstreak.authentication.AuthenticationActivity">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/authenticate_nav_host"

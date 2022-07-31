@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/home_dest"
-        android:name="com.apptimistiq.android.fitstreak.Main.ProgressTrack.DailyProgressFragment"
+        android:name="com.apptimistiq.android.fitstreak.main.progressTrack.DailyProgressFragment"
         android:label="@string/home_dest_label"
         tools:layout="@layout/fragment_daily_progress">
         <action
@@ -18,12 +18,12 @@
     </fragment>
     <fragment
         android:id="@+id/recipe_dest"
-        android:name="com.apptimistiq.android.fitstreak.Main.Recipe.RecipesFragment"
+        android:name="com.apptimistiq.android.fitstreak.main.recipe.RecipesFragment"
         android:label="@string/recipe_dest_label"
         tools:layout="@layout/fragment_recipes" />
     <fragment
         android:id="@+id/dashboard_dest"
-        android:name="com.apptimistiq.android.fitstreak.Main.Dashboard.DashboardFragment"
+        android:name="com.apptimistiq.android.fitstreak.main.dashboard.DashboardFragment"
         android:label="@string/dashboard_dest_label"
         tools:layout="@layout/fragment_dashboard">
         <action
@@ -34,7 +34,7 @@
     </fragment>
     <activity
         android:id="@+id/authenticationActivity"
-        android:name="com.apptimistiq.android.fitstreak.Authentication.AuthenticationActivity"
+        android:name="com.apptimistiq.android.fitstreak.authentication.AuthenticationActivity"
         android:label="activity_authentication"
         tools:layout="@layout/activity_authentication" />
 

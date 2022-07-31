@@ -1,4 +1,4 @@
-package com.apptimistiq.android.fitstreak.Authentication
+package com.apptimistiq.android.fitstreak.authentication
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

@@ -1,4 +1,4 @@
-package com.apptimistiq.android.fitstreak.Authentication.Onboarding
+package com.apptimistiq.android.fitstreak.authentication.onboarding
 
 import android.os.Bundle
 import android.view.LayoutInflater

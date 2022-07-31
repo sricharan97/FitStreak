@@ -1,16 +1,16 @@
-package com.apptimistiq.android.fitstreak.Main.ProgressTrack
+package com.apptimistiq.android.fitstreak.main.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.apptimistiq.android.fitstreak.databinding.FragmentDailyProgressBinding
+import com.apptimistiq.android.fitstreak.databinding.FragmentDashboardBinding
 
 
-class DailyProgressFragment : Fragment() {
+class DashboardFragment : Fragment() {
 
-    private lateinit var binding: FragmentDailyProgressBinding
+    private lateinit var binding: FragmentDashboardBinding
 
 
     override fun onCreateView(
@@ -18,17 +18,9 @@ class DailyProgressFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = FragmentDailyProgressBinding.inflate(layoutInflater, container, false)
+        binding = FragmentDashboardBinding.inflate(layoutInflater, container, false)
         return binding.root
-
     }
 
 
 }
-
-
-
-
-
-
-

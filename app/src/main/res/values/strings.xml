@@ -35,4 +35,8 @@
     <string name="permission_rationale_dialog">The Activity recognition permission is used to track all your physical activities in the app</string>
     <string name="permission_dialog_accept">GRANT</string>
     <string name="permission_dialog_reject">NO THANKS</string>
+    <string name="step_count_goal">stepCount</string>
+    <string name="water_glasses_goal">waterGlasses</string>
+    <string name="sleep_hr_goal">sleepHrs</string>
+    <string name="exercise_cal_burn_goal">exerciseCal</string>
 </resources>

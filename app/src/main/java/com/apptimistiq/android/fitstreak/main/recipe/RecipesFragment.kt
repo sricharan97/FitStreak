@@ -1,16 +1,14 @@
-package com.apptimistiq.android.fitstreak.Main.Dashboard
+package com.apptimistiq.android.fitstreak.main.recipe
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.apptimistiq.android.fitstreak.databinding.FragmentDashboardBinding
+import com.apptimistiq.android.fitstreak.R
 
 
-class DashboardFragment : Fragment() {
-
-    private lateinit var binding: FragmentDashboardBinding
+class RecipesFragment : Fragment() {
 
 
     override fun onCreateView(
@@ -18,8 +16,7 @@ class DashboardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = FragmentDashboardBinding.inflate(layoutInflater, container, false)
-        return binding.root
+        return inflater.inflate(R.layout.fragment_recipes, container, false)
     }
 
 

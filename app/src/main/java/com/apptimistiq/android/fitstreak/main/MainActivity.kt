@@ -1,4 +1,4 @@
-package com.apptimistiq.android.fitstreak.Main
+package com.apptimistiq.android.fitstreak.main
 
 import android.Manifest
 import android.app.Dialog
