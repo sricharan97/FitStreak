@@ -12,7 +12,7 @@ interface ActivityDataSource {
     fun getTodayActivity(): Flow<List<ActivityItemUiState>>
     fun getWeekActivities(): Flow<List<Activity>>
 
-    suspend fun saveActivity(activity: Activity)
-    suspend fun updateActivity(activity: Activity)
+    suspend fun saveActivity(activityItems: List<ActivityItemUiState>, date: Long)
+    suspend fun updateActivity(activityItems: List<ActivityItemUiState>, date: Long)
 
 }

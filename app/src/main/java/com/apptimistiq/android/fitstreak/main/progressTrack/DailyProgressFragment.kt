@@ -18,8 +18,11 @@ import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType.*
 import com.google.android.gms.fitness.data.Field
+import com.google.android.gms.fitness.request.SessionReadRequest
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.joda.time.DateTime
+import java.util.concurrent.TimeUnit
 
 private const val GOOGLE_FIT_PERMISSION_REQUEST_CODE = 101
 private const val LOG_TAG = "DailyProgressFragment"
@@ -33,23 +36,29 @@ class DailyProgressFragment : Fragment() {
 
     //create fitnessOptions instance declaring the data types our app need
     private val fitnessOptions = FitnessOptions.builder()
-        .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-        .addDataType(AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_STEP_COUNT_CUMULATIVE, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_HYDRATION, FitnessOptions.ACCESS_WRITE)
+        .addDataType(TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
         .build()
 
     //get instance of google account object to use with the API
     private val account = GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions)
 
     //get Recording API client
-    private val recordingClient = Fitness.getRecordingClient(requireActivity(), account)
+    private val recordingClient = Fitness.getRecordingClient(requireContext(), account)
 
     //get the History Client
-    private val historyClient = Fitness.getHistoryClient(requireActivity(), account)
+    private val historyClient = Fitness.getHistoryClient(requireContext(), account)
+
+    //get the Sessions Client
+    private val sessionsClient = Fitness.getSessionsClient(requireContext(), account)
 
     //list of Data types required for the app
     private val dataTypeList = listOf(
-        TYPE_STEP_COUNT_CUMULATIVE, TYPE_HYDRATION,
-        TYPE_CALORIES_EXPENDED
+        TYPE_STEP_COUNT_CUMULATIVE,
+        TYPE_CALORIES_EXPENDED, TYPE_HYDRATION, TYPE_SLEEP_SEGMENT
     )
 
 
@@ -78,6 +87,10 @@ class DailyProgressFragment : Fragment() {
 
                     } else if (uiState.canAccessGoogleFit and uiState.subscriptionDone) {
                         readDailyStepsTotal()
+                        readDailyCaloriesExpended()
+                        readDailyHydrationTotal()
+                        readDailySleepHrsTotal()
+                        viewModel.saveActivity()
                     }
 
                 }
@@ -162,7 +175,7 @@ class DailyProgressFragment : Fragment() {
                 val totalSteps =
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
                 Log.d(LOG_TAG, "Total steps until now are : $totalSteps")
-                viewModel.updateSteps(totalSteps)
+                viewModel.addSteps(totalSteps)
 
             }
             .addOnFailureListener { e ->
@@ -174,6 +187,71 @@ class DailyProgressFragment : Fragment() {
             }
 
     }
+
+    private fun readDailyCaloriesExpended() {
+        historyClient.readDailyTotal(dataTypeList[1])
+            .addOnSuccessListener { result ->
+                val totalCalories =
+                    result.dataPoints.firstOrNull()?.getValue(Field.FIELD_CALORIES)?.asFloat()
+                        ?.toInt() ?: 0
+                Log.d(LOG_TAG, "Total calories expended until now are : $totalCalories")
+                viewModel.addCalories(totalCalories)
+
+            }
+            .addOnFailureListener { e ->
+                Log.d(
+                    LOG_TAG, "Following exception has been raised while reading" +
+                            "daily calories total : $e"
+                )
+            }
+    }
+
+
+    private fun readDailyHydrationTotal() {
+
+        historyClient.readDailyTotal(dataTypeList[2])
+            .addOnSuccessListener { result ->
+                val totalLitres =
+                    result.dataPoints.firstOrNull()?.getValue(Field.FIELD_VOLUME)?.asFloat()
+                        ?.toInt() ?: 0
+                Log.d(LOG_TAG, "Total water consumed until now in litres is : $totalLitres")
+                viewModel.addLitres(totalLitres)
+            }
+    }
+
+
+    /**
+     * Work with Sessions to read the sleep session data
+     */
+    private fun readDailySleepHrsTotal() {
+
+        val endTime = DateTime.now()
+        val startTime = endTime.minusDays(1)
+
+        //Build the session read request first
+        val sessionReadRequest = SessionReadRequest.Builder()
+            .readSessionsFromAllApps()
+            .includeSleepSessions()
+            .read(TYPE_SLEEP_SEGMENT)
+            .setTimeInterval(startTime.millis, endTime.millis, TimeUnit.MILLISECONDS)
+            .build()
+
+        //Read the sleep session using sessions client
+
+        sessionsClient.readSession(sessionReadRequest)
+            .addOnSuccessListener { response ->
+
+                for (session in response.sessions) {
+                    val sessionStart = session.getStartTime(TimeUnit.HOURS)
+                    val sessionEnd = session.getEndTime(TimeUnit.HOURS)
+                    viewModel.addSleepHrs((sessionEnd - sessionStart).toInt())
+                }
+
+            }
+
+
+    }
+
 
 }
 

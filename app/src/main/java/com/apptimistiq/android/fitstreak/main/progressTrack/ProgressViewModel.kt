@@ -4,11 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
-import com.apptimistiq.android.fitstreak.main.data.database.Activity
+import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
+import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
 import com.apptimistiq.android.fitstreak.main.data.domain.ProgressTrackUiState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 
@@ -17,8 +16,23 @@ class ProgressViewModel(
     private val dataSource: ActivityDataSource
 ) : AndroidViewModel(app) {
 
-    private val _uiState = MutableStateFlow(ProgressTrackUiState(isFetchingActivities = true))
+    private val _uiState = MutableStateFlow(ProgressTrackUiState())
     val uiState: StateFlow<ProgressTrackUiState> = _uiState
+
+    private val activityItemToday: StateFlow<List<ActivityItemUiState>> =
+        dataSource.getTodayActivity().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+
+        )
+
+    //Store a reference to a list of ActivityItemUiState objects
+    private val activityItemUiStateList: ArrayList<ActivityItemUiState> = ArrayList()
+
+
+    //Get today's date to be used in the functions
+    private val currentDate = DateTime().withTimeAtStartOfDay().millis
 
 
     fun accessGoogleFit() {
@@ -36,18 +50,43 @@ class ProgressViewModel(
 
     }
 
-    fun updateSteps(totalSteps: Int) {
+    fun addSteps(reading: Int) {
+        activityItemUiStateList.add(ActivityItemUiState(ActivityType.STEP, reading))
+    }
 
-        val currentDate = DateTime().withTimeAtStartOfDay().millis
+    fun addCalories(reading: Int) {
+        activityItemUiStateList.add(ActivityItemUiState(ActivityType.EXERCISE, reading))
+    }
+
+    fun addLitres(reading: Int) {
+        activityItemUiStateList.add(ActivityItemUiState(ActivityType.WATER, reading))
+    }
+
+    fun addSleepHrs(reading: Int) {
+        activityItemUiStateList.add(ActivityItemUiState(ActivityType.STEP, reading))
+    }
+
+
+    //insert a new activity record in case this is the first time that app opens.
+    fun saveActivity() {
+
+        if (activityItemToday.value.isEmpty()) {
+            viewModelScope.launch {
+                dataSource.saveActivity(activityItemUiStateList, currentDate)
+            }
+        } else {
+            updateActivity()
+        }
+
+
+    }
+
+
+    // Update the step count for the existing activity record
+    private fun updateActivity() {
 
         viewModelScope.launch {
-            dataSource.updateActivity(
-                Activity(
-                    id = 0,
-                    steps = totalSteps,
-                    dateOfActivity = currentDate
-                )
-            )
+            dataSource.updateActivity(activityItemUiStateList, currentDate)
         }
 
     }

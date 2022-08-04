@@ -4,6 +4,7 @@ import com.apptimistiq.android.fitstreak.main.data.database.Activity
 import com.apptimistiq.android.fitstreak.main.data.database.ActivityDao
 import com.apptimistiq.android.fitstreak.main.data.database.asDomainModel
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
+import com.apptimistiq.android.fitstreak.main.data.domain.asDatabaseModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -27,12 +28,14 @@ class ActivityLocalRepository(
     }
 
 
-    override suspend fun saveActivity(activity: Activity) = withContext(ioDispatcher) {
-        activityDao.saveActivity(activity)
-    }
+    override suspend fun saveActivity(activityItems: List<ActivityItemUiState>, date: Long) =
+        withContext(ioDispatcher) {
+            activityDao.saveActivity(activityItems.asDatabaseModel(date))
+        }
 
-    override suspend fun updateActivity(activity: Activity) = withContext(ioDispatcher) {
-        activityDao.updateActivity(activity)
-    }
+    override suspend fun updateActivity(activityItems: List<ActivityItemUiState>, date: Long) =
+        withContext(ioDispatcher) {
+            activityDao.updateActivity(activityItems.asDatabaseModel(date))
+        }
 
 }
