@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.authentication.GoalType
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
@@ -30,7 +32,8 @@ class GoalSelectionFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        binding = FragmentGoalSelectionBinding.inflate(layoutInflater, container, false)
+        binding =
+            DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_goal_selection)
         // Inflate the layout for this fragment
         setUpStepCountPicker()
         setUpWaterGlassPicker()

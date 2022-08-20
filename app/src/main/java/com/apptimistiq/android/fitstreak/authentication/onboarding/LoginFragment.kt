@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.R
@@ -35,7 +36,7 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         //get instance of the binding class using static inflate method
-        binding = FragmentLoginBinding.inflate(layoutInflater, container, false)
+        binding = DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_login)
 
         // Inflate the layout for this fragment
         return binding.root

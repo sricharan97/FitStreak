@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/goal_selection_constraint_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.apptimistiq.android.fitstreak.authentication.onboarding.GoalSelectionFragment">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <TextView
-        android:id="@+id/goal_selection_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/goal_selection_text_margin"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/goal_selection_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.apptimistiq.android.fitstreak.authentication.onboarding.GoalSelectionFragment">
+
+        <TextView
+            android:id="@+id/goal_selection_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/goal_selection_text_margin"
         android:layout_marginEnd="@dimen/goal_selection_text_margin"
         android:text="@string/goal_selection_text_value"
         android:textSize="@dimen/goal_selection_text_size"
@@ -263,5 +265,6 @@
         app:layout_constraintVertical_bias="0.95" />
 
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
+</layout>

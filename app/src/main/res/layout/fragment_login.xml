@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/hello_constraint_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white"
-    tools:context="com.apptimistiq.android.fitstreak.authentication.onboarding.LoginFragment">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- TODO: add animation to this screen -->
-    <ImageView
-        android:id="@+id/app_icon_image"
-        android:layout_width="300dp"
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/hello_constraint_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        tools:context="com.apptimistiq.android.fitstreak.authentication.onboarding.LoginFragment">
+
+        <!-- TODO: add animation to this screen -->
+        <ImageView
+            android:id="@+id/app_icon_image"
+            android:layout_width="300dp"
         android:layout_height="300dp"
         android:contentDescription="@string/app_logo_img_desc"
         android:scaleType="centerCrop"
@@ -31,4 +34,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_icon_image" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

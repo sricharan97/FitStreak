@@ -7,11 +7,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentDailyProgressBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -67,7 +69,8 @@ class DailyProgressFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = FragmentDailyProgressBinding.inflate(layoutInflater, container, false)
+        binding =
+            DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_daily_progress)
         return binding.root
 
     }

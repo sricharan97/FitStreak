@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -56,7 +57,7 @@ class MainActivity : AppCompatActivity(), PermissionRationaleDialog.PermissionDi
         super.onCreate(savedInstanceState)
 
 
-        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
+        activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         setContentView(activityMainBinding.root)
 
