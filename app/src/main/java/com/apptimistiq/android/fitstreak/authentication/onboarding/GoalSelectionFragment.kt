@@ -1,17 +1,21 @@
 package com.apptimistiq.android.fitstreak.authentication.onboarding
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.authentication.GoalType
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
+import javax.inject.Inject
 
 
 private const val WATER_GLASS_MAX = 100
@@ -25,7 +29,19 @@ class GoalSelectionFragment : Fragment() {
 
     private lateinit var binding: FragmentGoalSelectionBinding
 
-    private val viewModel: AuthenticationViewModel by activityViewModels()
+    // @Inject annotated fields will be provided by Dagger
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel by viewModels<AuthenticationViewModel> { viewModelFactory }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (requireActivity().application as FitApp).appComponent.authenticationComponent().create()
+            .inject(
+                this
+            )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,7 +49,7 @@ class GoalSelectionFragment : Fragment() {
     ): View? {
 
         binding =
-            DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_goal_selection)
+            DataBindingUtil.inflate(inflater, R.layout.fragment_goal_selection, container, false)
         // Inflate the layout for this fragment
         setUpStepCountPicker()
         setUpWaterGlassPicker()

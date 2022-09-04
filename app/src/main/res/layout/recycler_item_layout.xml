@@ -8,7 +8,11 @@
 
         <variable
             name="activity_item"
-            type="com.apptimistiq.android.fitstreak.main.data.database.Activity" />
+            type="com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState" />
+
+        <variable
+            name="clickListener"
+            type="com.apptimistiq.android.fitstreak.main.progressTrack.ActivityItemListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,7 +22,8 @@
         android:layout_marginStart="@dimen/daily_progress_item_margin"
         android:layout_marginTop="@dimen/daily_progress_item_margin"
         android:layout_marginEnd="@dimen/daily_progress_item_margin"
-        android:background="@drawable/goal_view_background">
+        android:background="@drawable/goal_view_background"
+        android:onClick="@{() -> clickListener.onClick(activity_item)}">
 
 
         <ImageView
@@ -31,13 +36,14 @@
             app:layout_constraintHorizontal_bias="0.1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            app:activityIcon="@{activity_item.dataType}"
             tools:srcCompat="@drawable/ic_step_goal" />
 
         <TextView
-            android:id="@+id/step_text"
+            android:id="@+id/activity_type_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/step_text_value"
+            android:text="@{String.valueOf(activity_item.dataType)}"
             android:textSize="@dimen/goals_text_size"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -51,6 +57,7 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:goalProgress="@{activity_item}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.8"
@@ -62,7 +69,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:text="100"
+            android:text="@{String.valueOf(activity_item.currentReading)}"
             android:textSize="24sp"
             app:layout_constraintBottom_toBottomOf="@+id/reading_separator"
             app:layout_constraintEnd_toStartOf="@+id/reading_separator"
@@ -74,7 +81,7 @@
             android:id="@+id/reading_separator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="/"
+            android:text="@string/progress_reading_separator"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="@+id/goal_reading"
             app:layout_constraintEnd_toStartOf="@+id/goal_reading"
@@ -85,13 +92,13 @@
             android:id="@+id/goal_reading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="2000"
+            android:text="@{String.valueOf(activity_item.goalReading)}"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toEndOf="@+id/reading_separator"
-            app:layout_constraintTop_toBottomOf="@+id/step_text" />
+            app:layout_constraintTop_toBottomOf="@+id/activity_type_text" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

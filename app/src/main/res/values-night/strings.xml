@@ -39,4 +39,5 @@
     <string name="water_glasses_goal">waterGlasses</string>
     <string name="sleep_hr_goal">sleepHrs</string>
     <string name="exercise_cal_burn_goal">exerciseCal</string>
+    <string name="progress_reading_separator">/</string>
 </resources>

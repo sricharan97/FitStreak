@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Data Access object for ActivityStore table
  */
+
 @Dao
 interface ActivityDao {
 

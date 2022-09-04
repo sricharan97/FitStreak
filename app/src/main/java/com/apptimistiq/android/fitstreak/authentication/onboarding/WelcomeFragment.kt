@@ -22,7 +22,7 @@ class WelcomeFragment : Fragment() {
     ): View? {
 
         //get instance of the binding class using static inflate method
-        binding = DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_welcome)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_welcome, container, false)
 
         // Inflate the layout for this fragment
         return binding.root

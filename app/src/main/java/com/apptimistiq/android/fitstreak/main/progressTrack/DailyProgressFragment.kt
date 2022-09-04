@@ -1,6 +1,7 @@
 package com.apptimistiq.android.fitstreak.main.progressTrack
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,12 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentDailyProgressBinding
+import com.apptimistiq.android.fitstreak.main.data.GoalPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -25,6 +29,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 private const val GOOGLE_FIT_PERMISSION_REQUEST_CODE = 101
 private const val LOG_TAG = "DailyProgressFragment"
@@ -34,7 +39,16 @@ class DailyProgressFragment : Fragment() {
 
     private lateinit var binding: FragmentDailyProgressBinding
 
-    private val viewModel: ProgressViewModel by activityViewModels()
+    // @Inject annotated fields will be provided by Dagger
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel by viewModels<ProgressViewModel> { viewModelFactory }
+
+    private lateinit var recyclerAdapter: ActivityListAdapter
+
+    //GoalPreference values at present
+    private lateinit var currentGoalPreferences: GoalPreferences
 
     //create fitnessOptions instance declaring the data types our app need
     private val fitnessOptions = FitnessOptions.builder()
@@ -64,24 +78,38 @@ class DailyProgressFragment : Fragment() {
     )
 
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (requireActivity().application as FitApp).appComponent.dailyProgressComponent().create()
+            .inject(this)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         binding =
-            DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_daily_progress)
+            DataBindingUtil.inflate(inflater, R.layout.fragment_daily_progress, container, false)
         return binding.root
 
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
+
+        //initialize the recyclerAdapter by creating the ActivityListAdapter
+        recyclerAdapter = ActivityListAdapter(ActivityItemListener {
+            TODO("implement the onclick functionality of activity by handling in the viewmodel")
+        })
+
 
         //Check if user has granted necessary Oauth permissions to track the activities
         checkForOAuthPermissions()
 
-        //observer the ui state
+        //observe the ui state
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
@@ -99,6 +127,11 @@ class DailyProgressFragment : Fragment() {
                 }
             }
         }
+
+
+        //set the adapter on the recyclerView using Data binding
+        binding.recyclerView.adapter = recyclerAdapter
+
 
     }
 

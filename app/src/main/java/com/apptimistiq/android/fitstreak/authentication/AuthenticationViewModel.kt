@@ -1,10 +1,10 @@
 package com.apptimistiq.android.fitstreak.authentication
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.GoalDataSource
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 enum class GoalType {
     STEP,
@@ -14,10 +14,10 @@ enum class GoalType {
 
 }
 
-class AuthenticationViewModel(
-    val app: Application,
+// @Inject tells Dagger how to provide instances of this type
+class AuthenticationViewModel @Inject constructor(
     private val dataSource: GoalDataSource
-) : AndroidViewModel(app) {
+) : ViewModel() {
 
 
     fun saveGoal(goalType: GoalType, value: Int) {

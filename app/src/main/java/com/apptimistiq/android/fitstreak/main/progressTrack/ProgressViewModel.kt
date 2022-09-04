@@ -1,7 +1,6 @@
 package com.apptimistiq.android.fitstreak.main.progressTrack
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
@@ -10,22 +9,26 @@ import com.apptimistiq.android.fitstreak.main.data.domain.ProgressTrackUiState
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
+import javax.inject.Inject
 
-class ProgressViewModel(
-    val app: Application,
+
+// @Inject tells Dagger how to provide instances of this type
+class ProgressViewModel @Inject constructor(
     private val dataSource: ActivityDataSource
-) : AndroidViewModel(app) {
+) : ViewModel() {
+
 
     private val _uiState = MutableStateFlow(ProgressTrackUiState())
     val uiState: StateFlow<ProgressTrackUiState> = _uiState
 
-    private val activityItemToday: StateFlow<List<ActivityItemUiState>> =
+    val activityItemsToday: StateFlow<List<ActivityItemUiState>> =
         dataSource.getTodayActivity().stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
 
         )
+
 
     //Store a reference to a list of ActivityItemUiState objects
     private val activityItemUiStateList: ArrayList<ActivityItemUiState> = ArrayList()
@@ -63,14 +66,14 @@ class ProgressViewModel(
     }
 
     fun addSleepHrs(reading: Int) {
-        activityItemUiStateList.add(ActivityItemUiState(ActivityType.STEP, reading))
+        activityItemUiStateList.add(ActivityItemUiState(ActivityType.SLEEP, reading))
     }
 
 
     //insert a new activity record in case this is the first time that app opens.
     fun saveActivity() {
 
-        if (activityItemToday.value.isEmpty()) {
+        if (activityItemsToday.value.isEmpty()) {
             viewModelScope.launch {
                 dataSource.saveActivity(activityItemUiStateList, currentDate)
             }

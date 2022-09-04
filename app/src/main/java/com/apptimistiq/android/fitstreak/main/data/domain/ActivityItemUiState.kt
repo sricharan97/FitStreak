@@ -8,7 +8,7 @@ enum class ActivityType { WATER, STEP, SLEEP, EXERCISE }
 data class ActivityItemUiState(
     val dataType: ActivityType,
     val currentReading: Int = 0,
-
+    val goalReading: Int = 0
     )
 
 fun List<ActivityItemUiState>.asDatabaseModel(date: Long): Activity {

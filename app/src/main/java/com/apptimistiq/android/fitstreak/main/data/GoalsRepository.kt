@@ -10,19 +10,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 
 private const val LOG_TAG = "GoalsRepository"
 
 data class GoalPreferences(
-    val stepGoal: Int,
-    val waterGlassGoal: Int,
-    val sleepGoal: Int,
-    val exerciseGoal: Int
+    val stepGoal: Int = 0,
+    val waterGlassGoal: Int = 0,
+    val sleepGoal: Int = 0,
+    val exerciseGoal: Int = 0
 )
 
-
-class GoalsRepository(
+// @Inject tells Dagger how to provide instances of this type
+@Singleton
+class GoalsRepository @Inject constructor(
     private val goalPreferencesStore: DataStore<Preferences>
 ) : GoalDataSource {
 

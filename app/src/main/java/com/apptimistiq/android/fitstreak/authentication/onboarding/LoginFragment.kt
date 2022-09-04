@@ -36,7 +36,7 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         //get instance of the binding class using static inflate method
-        binding = DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_login)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
 
         // Inflate the layout for this fragment
         return binding.root

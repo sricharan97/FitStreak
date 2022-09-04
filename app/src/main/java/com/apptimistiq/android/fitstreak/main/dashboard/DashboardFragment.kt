@@ -20,7 +20,7 @@ class DashboardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = DataBindingUtil.setContentView(requireActivity(), R.layout.fragment_dashboard)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_dashboard, container, false)
         return binding.root
     }
 

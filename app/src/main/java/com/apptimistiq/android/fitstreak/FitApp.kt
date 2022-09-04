@@ -1,14 +1,25 @@
 package com.apptimistiq.android.fitstreak
 
 import android.app.Application
-import android.content.Context
-import androidx.datastore.preferences.preferencesDataStore
+import com.apptimistiq.android.fitstreak.di.AppComponent
+import com.apptimistiq.android.fitstreak.di.DaggerAppComponent
 
-private const val GOAL_PREFERENCES_NAME = "goal_preferences"
 
 class FitApp : Application() {
 
-    private val Context.dataStore by preferencesDataStore(name = GOAL_PREFERENCES_NAME)
+
+    // Instance of the AppComponent that will be used by all the Activities in the project
+    val appComponent: AppComponent by lazy {
+        initializeComponent()
+    }
+
+    private fun initializeComponent(): AppComponent {
+        // Creates an instance of AppComponent using its Factory constructor
+        // We pass the applicationContext that will be used as Context in the graph
+        return DaggerAppComponent.factory().create(applicationContext)
+    }
 
 
 }
+
+

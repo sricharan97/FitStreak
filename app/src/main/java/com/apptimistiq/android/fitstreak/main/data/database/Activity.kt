@@ -4,6 +4,7 @@ import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.apptimistiq.android.fitstreak.main.data.GoalPreferences
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
 
@@ -18,28 +19,32 @@ data class Activity(
 )
 
 
-fun Activity.asDomainModel(): List<ActivityItemUiState> {
+fun Activity.asDomainModel(goalPreferences: GoalPreferences): List<ActivityItemUiState> {
 
 
     return listOf(
         ActivityItemUiState(
             dataType = ActivityType.WATER,
-            currentReading = this.waterGlasses
+            currentReading = this.waterGlasses,
+            goalReading = goalPreferences.waterGlassGoal
         ),
 
         ActivityItemUiState(
             dataType = ActivityType.SLEEP,
-            currentReading = this.sleepHours
+            currentReading = this.sleepHours,
+            goalReading = goalPreferences.sleepGoal
         ),
 
         ActivityItemUiState(
             dataType = ActivityType.EXERCISE,
-            currentReading = this.exerciseCalories
+            currentReading = this.exerciseCalories,
+            goalReading = goalPreferences.exerciseGoal
         ),
 
         ActivityItemUiState(
             dataType = ActivityType.STEP,
-            currentReading = this.steps
+            currentReading = this.steps,
+            goalReading = goalPreferences.stepGoal
         )
     )
 
