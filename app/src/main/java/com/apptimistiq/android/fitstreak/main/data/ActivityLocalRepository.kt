@@ -24,13 +24,13 @@ class ActivityLocalRepository @Inject constructor(
 ) : ActivityDataSource {
 
 
-    override fun getTodayActivity(): Flow<List<ActivityItemUiState>> {
+    override fun getTodayActivity(): Flow<List<ActivityItemUiState>?> {
 
         //make the call main safe by switching the execution to ioDispatcher using
         //flowOn operator and conflate function to make sure that buffer has only the last value
         return activityDao.getTodayActivity().combine(goalDataSource.goalPreferences)
-        { activityToday: Activity, goalPreferences: GoalPreferences ->
-            activityToday.asDomainModel(goalPreferences)
+        { activityToday: Activity?, goalPreferences: GoalPreferences ->
+            activityToday?.asDomainModel(goalPreferences)
         }.flowOn(ioDispatcher)
             .conflate()
 

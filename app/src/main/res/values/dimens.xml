@@ -20,4 +20,5 @@
     <dimen name="goal_selection_goal_icon_size">24dp</dimen>
     <dimen name="goal_selection_goal_content_margin">16dp</dimen>
     <dimen name="daily_progress_item_margin">16dp</dimen>
+    <dimen name="daily_progress_fragment_top_margin">112dp</dimen>
 </resources>

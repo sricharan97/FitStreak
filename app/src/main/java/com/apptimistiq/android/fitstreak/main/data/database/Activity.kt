@@ -10,10 +10,10 @@ import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
 
 @Entity(tableName = "activity_store")
 data class Activity(
-    @NonNull @ColumnInfo(name = "water_glasses") val waterGlasses: Int = 0,
-    @NonNull @ColumnInfo(name = "sleep_hrs") val sleepHours: Int = 0,
-    @NonNull @ColumnInfo(name = "exercise_cal") val exerciseCalories: Int = 0,
-    @NonNull @ColumnInfo(name = "steps") val steps: Int = 0,
+    @NonNull @ColumnInfo(name = "water_glasses") val waterGlasses: Int,
+    @NonNull @ColumnInfo(name = "sleep_hrs") val sleepHours: Int,
+    @NonNull @ColumnInfo(name = "exercise_cal") val exerciseCalories: Int,
+    @NonNull @ColumnInfo(name = "steps") val steps: Int,
     @PrimaryKey @NonNull @ColumnInfo(name = "date_of_activity") val dateOfActivity: Long
 
 )

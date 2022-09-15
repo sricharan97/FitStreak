@@ -21,7 +21,7 @@ interface ActivityDao {
     /**
      * Get the activity details for today
      */
-    @Query("SELECT * FROM activity_store WHERE date(date_of_activity) = date('now') ")
+    @Query("SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') = date('now','start of day','localtime') ")
     fun getTodayActivity(): Flow<Activity>
 
     /**

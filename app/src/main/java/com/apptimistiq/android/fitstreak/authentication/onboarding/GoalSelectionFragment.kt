@@ -2,6 +2,7 @@ package com.apptimistiq.android.fitstreak.authentication.onboarding
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ private const val WATER_GLASS_MIN = 0
 private const val SLEEP_HR_MAX = 24
 private const val SLEEP_HR_MIN = 0
 
+private const val LOG_TAG = "GoalSelectionFragment"
 
 class GoalSelectionFragment : Fragment() {
 
@@ -34,6 +36,11 @@ class GoalSelectionFragment : Fragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val viewModel by viewModels<AuthenticationViewModel> { viewModelFactory }
+
+    private var stepCountGoal = 1000
+    private var waterGlassesGoal = 0
+    private var sleepHrsGoal = 0
+    private var exerciseCalGoal = 100
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -64,6 +71,10 @@ class GoalSelectionFragment : Fragment() {
 
 
         binding.goalSelectionDoneButton.setOnClickListener {
+            viewModel.saveGoal(GoalType.STEP, stepCountGoal)
+            viewModel.saveGoal(GoalType.WATER, waterGlassesGoal)
+            viewModel.saveGoal(GoalType.SLEEP, sleepHrsGoal)
+            viewModel.saveGoal(GoalType.EXERCISE, exerciseCalGoal)
             navigateToHomeDest()
             requireActivity().finish()
         }
@@ -83,8 +94,12 @@ class GoalSelectionFragment : Fragment() {
             displayedValues = pickerValuesStr
 
             setOnValueChangedListener { picker, oldVal, newVal ->
-                //TODO: read the value from the picker and store it to the viewmodel
-                viewModel.saveGoal(GoalType.STEP, newVal)
+                Log.d(
+                    LOG_TAG,
+                    "step count goal has been selected with step count - ${((newVal * 100) + 1000)}"
+                )
+                stepCountGoal = ((newVal * 100) + 1000)
+
             }
         }
     }
@@ -97,8 +112,8 @@ class GoalSelectionFragment : Fragment() {
             maxValue = WATER_GLASS_MAX
             wrapSelectorWheel = true
             setOnValueChangedListener { picker, oldVal, newVal ->
-                //TODO: read the value from the picker and store it to the viewmodel
-                viewModel.saveGoal(GoalType.WATER, newVal)
+                Log.d(LOG_TAG, "water goal has been selected with litres count - $newVal")
+                waterGlassesGoal = newVal
 
             }
         }
@@ -113,8 +128,8 @@ class GoalSelectionFragment : Fragment() {
             maxValue = SLEEP_HR_MAX
             wrapSelectorWheel = true
             setOnValueChangedListener { picker, oldVal, newVal ->
-                //TODO: read the value from the picker and store it to the viewmodel
-                viewModel.saveGoal(GoalType.SLEEP, newVal)
+                Log.d(LOG_TAG, "Sleep goal has been selected with hours count - $newVal")
+                sleepHrsGoal = newVal
 
             }
         }
@@ -125,14 +140,17 @@ class GoalSelectionFragment : Fragment() {
 
         binding.exerciseCalPicker.apply {
             wrapSelectorWheel = true
-            val pickerValuesInt = List(200) { (it * 100) + 100 }
+            val pickerValuesInt = List(60) { (it * 50) + 50 }
             val pickerValuesStr = pickerValuesInt.map { it.toString() }.toTypedArray()
             minValue = 0
             maxValue = pickerValuesStr.size - 1
             displayedValues = pickerValuesStr
             setOnValueChangedListener { picker, oldVal, newVal ->
-                //TODO: read the value from the picker and store it to the viewmodel
-                viewModel.saveGoal(GoalType.EXERCISE, newVal)
+                Log.d(
+                    LOG_TAG,
+                    "Exercise goal has been selected with calories count - ${((newVal * 100) + 100)}"
+                )
+                exerciseCalGoal = ((newVal * 50) + 50)
 
             }
         }

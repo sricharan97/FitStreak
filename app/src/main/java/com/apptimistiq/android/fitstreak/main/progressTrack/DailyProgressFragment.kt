@@ -20,10 +20,12 @@ import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentDailyProgressBinding
 import com.apptimistiq.android.fitstreak.main.data.GoalPreferences
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.fitness.Fitness
-import com.google.android.gms.fitness.FitnessOptions
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.fitness.*
+import com.google.android.gms.fitness.data.*
+import com.google.android.gms.fitness.data.DataSource.TYPE_RAW
 import com.google.android.gms.fitness.data.DataType.*
-import com.google.android.gms.fitness.data.Field
+import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -57,23 +59,24 @@ class DailyProgressFragment : Fragment() {
         .addDataType(TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
         .addDataType(TYPE_HYDRATION, FitnessOptions.ACCESS_WRITE)
         .addDataType(TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_WEIGHT, FitnessOptions.ACCESS_WRITE)
+        .addDataType(TYPE_HEIGHT, FitnessOptions.ACCESS_WRITE)
+        .addDataType(TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
+        .accessSleepSessions(FitnessOptions.ACCESS_WRITE)
         .build()
 
-    //get instance of google account object to use with the API
-    private val account = GoogleSignIn.getAccountForExtension(requireContext(), fitnessOptions)
+    private lateinit var account: GoogleSignInAccount
 
-    //get Recording API client
-    private val recordingClient = Fitness.getRecordingClient(requireContext(), account)
+    private lateinit var recordingClient: RecordingClient
 
-    //get the History Client
-    private val historyClient = Fitness.getHistoryClient(requireContext(), account)
+    private lateinit var historyClient: HistoryClient
 
-    //get the Sessions Client
-    private val sessionsClient = Fitness.getSessionsClient(requireContext(), account)
+    private lateinit var sessionsClient: SessionsClient
 
     //list of Data types required for the app
     private val dataTypeList = listOf(
-        TYPE_STEP_COUNT_CUMULATIVE,
+        TYPE_STEP_COUNT_DELTA,
         TYPE_CALORIES_EXPENDED, TYPE_HYDRATION, TYPE_SLEEP_SEGMENT
     )
 
@@ -100,6 +103,19 @@ class DailyProgressFragment : Fragment() {
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
+        //get instance of google account object to use with the API
+        account = GoogleSignIn.getAccountForExtension(requireActivity(), fitnessOptions)
+
+        //get Recording API client
+        recordingClient = Fitness.getRecordingClient(requireActivity(), account)
+
+        //get History API client
+        historyClient = Fitness.getHistoryClient(requireActivity(), account)
+
+        //get Sessions client
+        sessionsClient = Fitness.getSessionsClient(requireActivity(), account)
+
+
         //initialize the recyclerAdapter by creating the ActivityListAdapter
         recyclerAdapter = ActivityListAdapter(ActivityItemListener {
             TODO("implement the onclick functionality of activity by handling in the viewmodel")
@@ -114,13 +130,22 @@ class DailyProgressFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
                     if (uiState.canAccessGoogleFit and !uiState.subscriptionDone) {
+                        Log.d(LOG_TAG, "about to call addsubscriptions inside 0bserver")
                         addSubscriptions()
 
-                    } else if (uiState.canAccessGoogleFit and uiState.subscriptionDone) {
+                    } else if (uiState.canAccessGoogleFit and uiState.subscriptionDone and !uiState.readSteps
+                        and !uiState.readCalories and !uiState.readSleepHrs and !uiState.readWaterLitres
+                    ) {
+                        Log.d(LOG_TAG, "about to call reading steps inside observer")
+                        addHydrationData()
+                        addSleepHrsForDay()
                         readDailyStepsTotal()
                         readDailyCaloriesExpended()
-                        readDailyHydrationTotal()
-                        readDailySleepHrsTotal()
+
+                    } else if (uiState.readSteps and uiState.readWaterLitres and uiState.readCalories
+                        and !uiState.activitySavedForDay
+                    ) {
+                        Log.d(LOG_TAG, "about to call saving activity step inside observer")
                         viewModel.saveActivity()
                     }
 
@@ -128,10 +153,8 @@ class DailyProgressFragment : Fragment() {
             }
         }
 
-
         //set the adapter on the recyclerView using Data binding
         binding.recyclerView.adapter = recyclerAdapter
-
 
     }
 
@@ -180,6 +203,7 @@ class DailyProgressFragment : Fragment() {
                 val scDataTypeList = subscriptions.map { it.dataType }
 
                 for (type in dataTypeList) {
+                    Log.d(LOG_TAG, "$type is in the subscription list")
 
                     //If there is no active subscription for the required data types,subscribe.
                     if (type !in scDataTypeList) {
@@ -200,11 +224,13 @@ class DailyProgressFragment : Fragment() {
 
                 }
                 viewModel.doneWithSubscription()
-
             }
+
+
     }
 
     private fun readDailyStepsTotal() {
+
 
         historyClient.readDailyTotal(dataTypeList[0])
             .addOnSuccessListener { result ->
@@ -225,11 +251,14 @@ class DailyProgressFragment : Fragment() {
     }
 
     private fun readDailyCaloriesExpended() {
+        addHeightAndWeight()
+
         historyClient.readDailyTotal(dataTypeList[1])
             .addOnSuccessListener { result ->
                 val totalCalories =
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_CALORIES)?.asFloat()
                         ?.toInt() ?: 0
+
                 Log.d(LOG_TAG, "Total calories expended until now are : $totalCalories")
                 viewModel.addCalories(totalCalories)
 
@@ -240,6 +269,64 @@ class DailyProgressFragment : Fragment() {
                             "daily calories total : $e"
                 )
             }
+
+    }
+
+
+    private fun addHeightAndWeight() {
+
+        val timestamp = DateTime().millis
+        val height = 1.75f
+        val weight = 75f
+
+        val heightDataSource = DataSource.Builder()
+            .setAppPackageName(getString(R.string.app_package))
+            .setDataType(TYPE_HEIGHT)
+            .setType(TYPE_RAW)
+            .build()
+
+        val weightDataSource = DataSource.Builder()
+            .setAppPackageName(getString(R.string.app_package))
+            .setDataType(TYPE_WEIGHT)
+            .setType(TYPE_RAW)
+            .build()
+
+        val heightDataPoint = DataPoint.builder(heightDataSource)
+            .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
+            .setField(Field.FIELD_HEIGHT, height)
+            .build()
+
+        val heightDataSet = DataSet.builder(heightDataSource)
+            .add(heightDataPoint)
+            .build()
+
+        val weightDataPoint = DataPoint.builder(weightDataSource)
+            .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
+            .setField(Field.FIELD_WEIGHT, weight)
+            .build()
+
+        val weightDataSet = DataSet.builder(weightDataSource)
+            .add(weightDataPoint)
+            .build()
+
+        historyClient.insertData(heightDataSet)
+            .addOnSuccessListener {
+                Log.d(LOG_TAG, "inserted height of the user - $height")
+            }
+            .addOnFailureListener { e ->
+                Log.d(LOG_TAG, "there was a problem inserting the height of the user $e")
+
+            }
+
+        historyClient.insertData(weightDataSet)
+            .addOnSuccessListener {
+                Log.d(LOG_TAG, "Inserted the weight of the user - $weight")
+
+            }
+            .addOnFailureListener { e ->
+                Log.d(LOG_TAG, "there was a problem inserting the weight of the user $e")
+            }
+
     }
 
 
@@ -252,7 +339,49 @@ class DailyProgressFragment : Fragment() {
                         ?.toInt() ?: 0
                 Log.d(LOG_TAG, "Total water consumed until now in litres is : $totalLitres")
                 viewModel.addLitres(totalLitres)
+
             }
+            .addOnFailureListener { e ->
+                Log.d(
+                    LOG_TAG, "Following exception has been raised while reading" +
+                            "daily hydration total : $e"
+                )
+            }
+
+    }
+
+
+    private fun addHydrationData() {
+
+        val timestamp = DateTime().minusHours(1).millis
+        val waterLitresConsumed = 4f
+
+        // Create a data source
+        val hydrationDataSource = DataSource.Builder()
+            .setAppPackageName(getString(R.string.app_package))
+            .setDataType(TYPE_HYDRATION)
+            .setType(DataSource.TYPE_RAW)
+            .build()
+
+
+        val hydrationDatapoint = DataPoint.builder(hydrationDataSource)
+            .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
+            .setField(Field.FIELD_VOLUME, waterLitresConsumed)
+            .build()
+
+        val hydrationDataSet = DataSet.builder(hydrationDataSource)
+            .add(hydrationDatapoint)
+            .build()
+
+        historyClient.insertData(hydrationDataSet)
+            .addOnSuccessListener {
+                Log.d(LOG_TAG, "Successfully inserted the water data of $waterLitresConsumed")
+                readDailyHydrationTotal()
+            }
+            .addOnFailureListener {
+                Log.d(LOG_TAG, "Failed to add hydration data")
+            }
+
     }
 
 
@@ -280,11 +409,52 @@ class DailyProgressFragment : Fragment() {
                 for (session in response.sessions) {
                     val sessionStart = session.getStartTime(TimeUnit.HOURS)
                     val sessionEnd = session.getEndTime(TimeUnit.HOURS)
-                    viewModel.addSleepHrs((sessionEnd - sessionStart).toInt())
+                    val sleepHrs = (sessionEnd - sessionStart).toInt()
+                    Log.d(LOG_TAG, "Total sleep hours are : $sleepHrs")
+                    viewModel.addSleepHrs(sleepHrs)
                 }
+
+            }.addOnFailureListener { e ->
+                Log.d(
+                    LOG_TAG, "Following exception has been raised while reading" +
+                            "daily sleep hrs total : $e"
+                )
 
             }
 
+    }
+
+    private fun addSleepHrsForDay() {
+
+        val sleepStart = DateTime().withTimeAtStartOfDay().minusHours(3).millis
+        val sleepEnd = DateTime().withTimeAtStartOfDay().plusHours(7).millis
+
+
+        // Create the sleep session
+        val session = Session.Builder()
+            .setName("sleepSession")
+            .setIdentifier("sleepIdentifier")
+            .setDescription("sleep session for the night")
+            .setStartTime(sleepStart, TimeUnit.MILLISECONDS)
+            .setEndTime(sleepEnd, TimeUnit.MILLISECONDS)
+            .setActivity(FitnessActivities.SLEEP)
+            .build()
+
+        // Build the request to insert the session.
+        val request = SessionInsertRequest.Builder()
+            .setSession(session)
+            .build()
+
+        sessionsClient.insertSession(request)
+            .addOnSuccessListener {
+                Log.d(LOG_TAG, "inserted the sleep hrs - ${(sleepEnd - sleepStart).div(3600000)}")
+                readDailySleepHrsTotal()
+            }
+            .addOnFailureListener { e ->
+
+                Log.w(LOG_TAG, "There was a problem inserting the session", e)
+
+            }
 
     }
 
