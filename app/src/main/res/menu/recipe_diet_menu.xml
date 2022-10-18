@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/vegetarian_diet"
+        android:title="@string/vegetarian_diet" />
+    <item
+        android:id="@+id/vegan_diet"
+        android:title="@string/vegan_diet" />
+
+    <item
+        android:id="@+id/paleo_diet"
+        android:title="@string/paleo_diet" />
+
+    <item
+        android:id="@+id/keto_diet"
+        android:title="@string/keto_diet" />
+
+</menu>

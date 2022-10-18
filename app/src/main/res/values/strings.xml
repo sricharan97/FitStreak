@@ -41,4 +41,8 @@
     <string name="sleep_hr_goal">sleepHrs</string>
     <string name="exercise_cal_burn_goal">exerciseCal</string>
     <string name="progress_reading_separator">/</string>
+    <string name="vegetarian_diet">Vegetarian</string>
+    <string name="paleo_diet">Paleo</string>
+    <string name="vegan_diet">Vegan</string>
+    <string name="keto_diet">Ketogenic</string>
 </resources>

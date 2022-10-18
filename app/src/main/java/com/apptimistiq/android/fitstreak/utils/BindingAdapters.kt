@@ -1,12 +1,15 @@
 package com.apptimistiq.android.fitstreak.utils
 
+import android.util.Log
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
+import com.apptimistiq.android.fitstreak.main.data.domain.RecipeTrackUiState
 import com.apptimistiq.android.fitstreak.main.progressTrack.ActivityListAdapter
 
 
@@ -39,6 +42,26 @@ fun bindGoalProgress(progressBar: ProgressBar, activityItemUiState: ActivityItem
     val progressNum =
         activityItemUiState.currentReading.toDouble().div(activityItemUiState.goalReading)
     progressBar.progress = (progressNum * 100).toInt()
+
+}
+
+@BindingAdapter("recipeInfo")
+fun bindRecipeInfo(textView: TextView, recipeTrackState: RecipeTrackUiState) {
+
+    val recipeList = recipeTrackState.recipes
+
+    val recipesNumber = recipeList.size
+
+    Log.d(
+        "BindingAdapters", "setting on ${recipeTrackState.recipeType} with list size being" +
+                " ${recipeList.size}"
+    )
+
+    if (recipeList.isNotEmpty()) {
+        textView.text =
+            "${recipeTrackState.recipeType} has fetched $recipesNumber recipes with first one" +
+                    "being ${recipeList[0].title} with ${recipeList[0].calories} calories "
+    }
 
 
 }

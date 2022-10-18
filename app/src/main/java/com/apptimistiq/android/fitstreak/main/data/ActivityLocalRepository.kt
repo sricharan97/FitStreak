@@ -1,5 +1,6 @@
 package com.apptimistiq.android.fitstreak.main.data
 
+import com.apptimistiq.android.fitstreak.authentication.GoalType
 import com.apptimistiq.android.fitstreak.main.data.database.Activity
 import com.apptimistiq.android.fitstreak.main.data.database.ActivityDao
 import com.apptimistiq.android.fitstreak.main.data.database.asDomainModel
@@ -54,4 +55,14 @@ class ActivityLocalRepository @Inject constructor(
             activityDao.updateActivity(activityItems.asDatabaseModel(date))
         }
 
+    override suspend fun saveGoal(goalType: GoalType, value: Int) {
+        withContext(ioDispatcher) {
+            when (goalType) {
+                GoalType.STEP -> goalDataSource.updateStepGoal(value)
+                GoalType.EXERCISE -> goalDataSource.updateExerciseGoal(value)
+                GoalType.SLEEP -> goalDataSource.updateSleepGoal(value)
+                GoalType.WATER -> goalDataSource.updateWaterGlassesGoal(value)
+            }
+        }
+    }
 }

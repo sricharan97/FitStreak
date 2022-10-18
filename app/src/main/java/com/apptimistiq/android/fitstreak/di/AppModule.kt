@@ -1,9 +1,6 @@
 package com.apptimistiq.android.fitstreak.di
 
-import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
-import com.apptimistiq.android.fitstreak.main.data.ActivityLocalRepository
-import com.apptimistiq.android.fitstreak.main.data.GoalDataSource
-import com.apptimistiq.android.fitstreak.main.data.GoalsRepository
+import com.apptimistiq.android.fitstreak.main.data.*
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
@@ -23,5 +20,10 @@ abstract class AppModule {
     @Singleton
     @Binds
     abstract fun bindGoalDataSource(goalRepository: GoalsRepository): GoalDataSource
+
+    //Makes Dagger provide RecipeRemoteRepository when a RecipeRemoteDatasource is requested
+    @Singleton
+    @Binds
+    abstract fun bindRecipeRemoteDataSource(recipeRemoteRepository: RecipeRemoteRepository): RecipeRemoteDataSource
 
 }

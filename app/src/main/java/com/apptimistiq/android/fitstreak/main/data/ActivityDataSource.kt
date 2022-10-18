@@ -1,5 +1,6 @@
 package com.apptimistiq.android.fitstreak.main.data
 
+import com.apptimistiq.android.fitstreak.authentication.GoalType
 import com.apptimistiq.android.fitstreak.main.data.database.Activity
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
 import kotlinx.coroutines.flow.Flow
@@ -14,5 +15,6 @@ interface ActivityDataSource {
 
     suspend fun saveActivity(activityItems: List<ActivityItemUiState>, date: Long)
     suspend fun updateActivity(activityItems: List<ActivityItemUiState>, date: Long)
+    suspend fun saveGoal(goalType: GoalType, value: Int)
 
 }

@@ -1,19 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <data>
 
-    <FrameLayout
+        <variable
+            name="viewModel"
+            type="com.apptimistiq.android.fitstreak.main.recipe.RecipeViewModel" />
+    </data>
+
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         tools:context="com.apptimistiq.android.fitstreak.main.recipe.RecipesFragment">
 
-        <!-- TODO: Update blank fragment layout -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
 
-    </FrameLayout>
+        <TextView
+            android:id="@+id/breakfast_recipe_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:recipeInfo="@{viewModel.breakfastRecipes}" />
+
+        <TextView
+            android:id="@+id/main_course_recipe_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:recipeInfo="@{viewModel.mainCourseRecipes}" />
+
+        <TextView
+            android:id="@+id/snack_recipe_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:recipeInfo="@{viewModel.snackRecipes}" />
+
+        <TextView
+            android:id="@+id/salad_recipe_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:recipeInfo="@{viewModel.saladRecipes}" />
+
+
+    </LinearLayout>
 
 </layout>

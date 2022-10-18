@@ -4,6 +4,9 @@
 
     <!--Need Activity Recognition permission to access the google fit api's data types -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <!--Need access to internet to communicate with Recipes API -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".FitApp"

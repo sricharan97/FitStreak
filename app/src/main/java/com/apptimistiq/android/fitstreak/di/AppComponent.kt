@@ -4,7 +4,9 @@ import android.content.Context
 import com.apptimistiq.android.fitstreak.authentication.di.AuthenticationComponent
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
 import com.apptimistiq.android.fitstreak.main.data.GoalDataSource
+import com.apptimistiq.android.fitstreak.main.data.RecipeRemoteDataSource
 import com.apptimistiq.android.fitstreak.main.progressTrack.di.DailyProgressComponent
+import com.apptimistiq.android.fitstreak.main.recipe.di.RecipesTrackComponent
 import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
@@ -16,6 +18,7 @@ import javax.inject.Singleton
     modules = [
         AppModule::class,
         DatabaseModule::class,
+        NetworkModule::class,
         ViewModelBuilderModule::class,
         SubComponentsModule::class
     ]
@@ -31,11 +34,16 @@ interface AppComponent {
 
     fun dailyProgressComponent(): DailyProgressComponent.Factory
     fun authenticationComponent(): AuthenticationComponent.Factory
+    fun recipesTrackComponent(): RecipesTrackComponent.Factory
 
     val activityDataSource: ActivityDataSource
     val goalDataSource: GoalDataSource
+    val recipeRemoteDataSource: RecipeRemoteDataSource
 
 }
 
-@Module(subcomponents = [DailyProgressComponent::class, AuthenticationComponent::class])
+@Module(
+    subcomponents = [DailyProgressComponent::class, AuthenticationComponent::class,
+        RecipesTrackComponent::class]
+)
 object SubComponentsModule
