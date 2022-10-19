@@ -39,6 +39,8 @@ class RecipesFragment : Fragment() {
             container, false
         )
 
+        setHasOptionsMenu(true)
+
         return binding.root
     }
 
