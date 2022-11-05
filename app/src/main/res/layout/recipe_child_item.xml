@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="recipe"
+            type="com.apptimistiq.android.fitstreak.main.data.domain.Recipe" />
+
+        <variable
+            name="clickListener"
+            type="com.apptimistiq.android.fitstreak.main.recipe.RecipeItemListener" />
+    </data>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/child_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/recipe_child_item_margin"
+        android:elevation="8dp"
+        android:onClick="@{() -> clickListener.onClick(recipe)}"
+        app:cardCornerRadius="4dp">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/recipe_image_view"
+                android:layout_width="@dimen/recipe_image_size"
+                android:layout_height="0dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="3"
+                app:imgUrl="@{recipe.imgUrl}"
+                tools:src="@drawable/ic_recipe_placeholder_image" />
+
+            <TextView
+                android:id="@+id/recipe_title"
+                android:layout_width="@dimen/recipe_image_size"
+                android:layout_height="0dp"
+                android:layout_marginBottom="8dp"
+                android:layout_weight="2"
+                android:gravity="center_horizontal"
+                android:lines="3"
+                android:text="@{recipe.title}"
+                android:textSize="12sp"
+                tools:text="Sample recipe title" />
+
+            <TextView
+                android:id="@+id/recipe_calorie"
+                android:layout_width="@dimen/recipe_image_size"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:text="@{String.valueOf(Math.round(recipe.calories)) + ` Cal`}"
+                tools:text="40 Cal" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</layout>

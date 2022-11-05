@@ -10,12 +10,15 @@
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_baseline_thumb_up_24.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_exercise_goal.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_fit_streak_logo.xml" value="0.184" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_glide_placeholder_recipe.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_glide_recipe_error.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_home.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_home_outline.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_onboarding_screen.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_outline_dashboard.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_recipe_outline.xml" value="0.1" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_recipe_placeholder_image.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_sign_up_logo.xml" value="0.101" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_sleep_goal.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/drawable/ic_step_goal.xml" value="0.1" />
@@ -30,8 +33,11 @@
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_goal_selection.xml" value="0.22" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_hello.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_login.xml" value="0.13333333333333333" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_recipe_instructions.xml" value="0.15081521739130435" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_recipes.xml" value="0.1" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/fragment_welcome.xml" value="0.17552083333333332" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/recipe_child_item.xml" value="0.3333333333333333" />
+        <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/recipe_parent_item.xml" value="0.15081521739130435" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/layout/recycler_item_layout.xml" value="0.1480978260869565" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/menu/bottom_nav_menu.xml" value="0.17552083333333332" />
         <entry key="..\:/Nanodegree/FinalProject/FitStreak/app/src/main/res/menu/recipe_diet_menu.xml" value="0.17552083333333332" />

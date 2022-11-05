@@ -12,42 +12,22 @@
     </data>
 
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:context="com.apptimistiq.android.fitstreak.main.recipe.RecipesFragment">
+        tools:context=".main.MainActivity">
 
-
-        <TextView
-            android:id="@+id/breakfast_recipe_view"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recipe_parent_recycler_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:recipeInfo="@{viewModel.breakfastRecipes}" />
-
-        <TextView
-            android:id="@+id/main_course_recipe_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:recipeInfo="@{viewModel.mainCourseRecipes}" />
-
-        <TextView
-            android:id="@+id/snack_recipe_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:recipeInfo="@{viewModel.snackRecipes}" />
-
-        <TextView
-            android:id="@+id/salad_recipe_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:recipeInfo="@{viewModel.saladRecipes}" />
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:listData="@{viewModel.recipeTrackList}" />
 
 
-    </LinearLayout>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

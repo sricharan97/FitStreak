@@ -7,6 +7,7 @@ import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import javax.inject.Singleton
 
 //Base URL to interact with the Spoonacular Web service
@@ -24,6 +25,7 @@ object NetworkModule {
     fun provideSpoonacularRetrofitService(moshi: Moshi): SpoonacularApiService {
 
         return Retrofit.Builder()
+            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .baseUrl(BASE_URL)
             .build()

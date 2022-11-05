@@ -4,5 +4,5 @@ data class RecipeTrackUiState(
     val recipeType: String,
     val isFetchingRecipes: Boolean = false,
     val userMessage: String? = null,
-    val recipes: List<Recipe>,
+    val recipes: List<Recipe>
 )

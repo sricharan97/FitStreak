@@ -47,60 +47,60 @@ class RecipeViewModel @Inject constructor(
         MealType.MainCourse to "main course"
     )
 
+
+    //Use this stateflow to keep track of navigation to the recipeInstruction screen
+
     private val _menuItemSelection = MutableStateFlow(recipeTypeMap[RecipeDietType.Vegetarian]!!)
 
+    private val _currentRecipeId = MutableStateFlow(0)
 
-    val breakfastRecipes: StateFlow<RecipeTrackUiState> =
+    val currentRecipeId: StateFlow<Int> = _currentRecipeId
+
+
+    //for extracting the recipe Image
+    val recipeUrl: StateFlow<String?> = _currentRecipeId.flatMapLatest { currentRecipeID ->
+        recipeRemoteDataSource.getRecipeUrl(currentRecipeID)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null
+    )
+
+
+    private val breakfastRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Breakfast]!!)
         }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = RecipeTrackUiState(
-                    recipeType = mealTypeMap[MealType.Breakfast]!!,
-                    isFetchingRecipes = true, recipes = emptyList()
-                )
-            )
 
-
-    val mainCourseRecipes: StateFlow<RecipeTrackUiState> =
+    private val mainCourseRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.MainCourse]!!)
         }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = RecipeTrackUiState(
-                    recipeType = mealTypeMap[MealType.MainCourse]!!,
-                    isFetchingRecipes = true, recipes = emptyList()
-                )
-            )
+
+    private val snackRecipes: Flow<RecipeTrackUiState> =
+        _menuItemSelection.flatMapLatest { dietType ->
+            recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Snack]!!)
+        }
+
+    private val saladRecipes: Flow<RecipeTrackUiState> =
+        _menuItemSelection.flatMapLatest { dietType ->
+            recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Salad]!!)
+        }
 
 
-    val snackRecipes: StateFlow<RecipeTrackUiState> = _menuItemSelection.flatMapLatest { dietType ->
-        recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Snack]!!)
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = RecipeTrackUiState(
-                recipeType = mealTypeMap[MealType.Snack]!!,
-                isFetchingRecipes = true, recipes = emptyList()
-            )
-        )
-
-    val saladRecipes: StateFlow<RecipeTrackUiState> = _menuItemSelection.flatMapLatest { dietType ->
-        recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Salad]!!)
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = RecipeTrackUiState(
-                recipeType = mealTypeMap[MealType.Salad]!!,
-                isFetchingRecipes = true, recipes = emptyList()
-            )
-        )
+    //for observing the changes to recipes list
+    val recipeTrackList: StateFlow<List<RecipeTrackUiState>> = combine(
+        breakfastRecipes,
+        mainCourseRecipes,
+        snackRecipes,
+        saladRecipes
+    ) { bR: RecipeTrackUiState, mR: RecipeTrackUiState, sR: RecipeTrackUiState, nR: RecipeTrackUiState ->
+        listOf(bR, mR, sR, nR)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
 
     fun updateMenuDietType(diet: RecipeDietType) {
@@ -109,6 +109,14 @@ class RecipeViewModel @Inject constructor(
             recipeTypeMap[diet]!!
         }
 
+    }
+
+    fun updateCurrentRecipeId(recipeId: Int) {
+        _currentRecipeId.update { recipeId }
+    }
+
+    fun navigateToRecipeUrlCompleted() {
+        _currentRecipeId.update { 0 }
     }
 
 

@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface RecipeRemoteDataSource {
 
-    suspend fun getRecipes(dietTypeOfRecipe: String, mealType: String): Flow<RecipeTrackUiState>
+    fun getRecipes(dietTypeOfRecipe: String, mealType: String): Flow<RecipeTrackUiState>
+
+    fun getRecipeUrl(recipeId: Int): Flow<String?>
 
 }

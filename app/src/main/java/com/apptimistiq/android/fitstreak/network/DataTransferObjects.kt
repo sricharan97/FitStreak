@@ -44,6 +44,16 @@ data class JsonRecipe(
 )
 
 
+/**
+ * Json object for the recipeCard endpoint
+ */
+
+data class RecipeCard(
+    @Json(name = "url")
+    val recipeCardImgUrl: String
+)
+
+
 fun List<RecipeItem>.asDomainModel(mealType: String): RecipeTrackUiState {
 
     val recipeList = map {

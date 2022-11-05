@@ -12,5 +12,6 @@ interface RecipesTrackComponent {
         fun create(): RecipesTrackComponent
     }
 
+
     fun inject(fragment: RecipesFragment)
 }
