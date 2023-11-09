@@ -11,7 +11,6 @@ enum class GoalType {
     WATER,
     EXERCISE,
     SLEEP
-
 }
 
 // @Inject tells Dagger how to provide instances of this type

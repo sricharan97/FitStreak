@@ -24,4 +24,6 @@
     <dimen name="recipe_type_title_size">18sp</dimen>
     <dimen name="recipe_child_item_margin">12dp</dimen>
     <dimen name="recipe_image_size">100dp</dimen>
+    <dimen name="dashboard_user_info_card_height">160dp</dimen>
+    <dimen name="dashboard_activity_goals_card_height">280dp</dimen>
 </resources>

@@ -6,6 +6,7 @@ import com.apptimistiq.android.fitstreak.main.data.RecipeRemoteDataSource
 import com.apptimistiq.android.fitstreak.main.data.domain.RecipeTrackUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -50,11 +51,14 @@ class RecipeViewModel @Inject constructor(
 
     //Use this stateflow to keep track of navigation to the recipeInstruction screen
 
-    private val _menuItemSelection = MutableStateFlow(recipeTypeMap[RecipeDietType.Vegetarian]!!)
+    private val _menuItemSelection: StateFlow<String> =
+        recipeRemoteDataSource.getRecipeDietType().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = recipeTypeMap[RecipeDietType.Vegetarian]!!
+        )
 
     private val _currentRecipeId = MutableStateFlow(0)
-
-    val currentRecipeId: StateFlow<Int> = _currentRecipeId
 
 
     //for extracting the recipe Image
@@ -105,8 +109,8 @@ class RecipeViewModel @Inject constructor(
 
     fun updateMenuDietType(diet: RecipeDietType) {
 
-        _menuItemSelection.update {
-            recipeTypeMap[diet]!!
+        viewModelScope.launch {
+            recipeRemoteDataSource.updateRecipeDietType(recipeTypeMap[diet]!!)
         }
 
     }

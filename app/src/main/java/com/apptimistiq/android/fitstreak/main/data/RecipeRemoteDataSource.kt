@@ -9,4 +9,8 @@ interface RecipeRemoteDataSource {
 
     fun getRecipeUrl(recipeId: Int): Flow<String?>
 
+    fun getRecipeDietType(): Flow<String>
+
+    suspend fun updateRecipeDietType(dietType: String)
+
 }

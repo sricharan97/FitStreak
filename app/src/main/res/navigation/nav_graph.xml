@@ -15,6 +15,9 @@
             app:destination="@id/authenticationActivity"
             app:launchSingleTop="true"
             app:popUpTo="@id/authenticationActivity" />
+        <action
+            android:id="@+id/action_home_dest_to_editActivityFragment"
+            app:destination="@id/editActivityFragment" />
     </fragment>
     <fragment
         android:id="@+id/recipe_dest"
@@ -31,11 +34,44 @@
             app:destination="@id/authenticationActivity"
             app:launchSingleTop="true"
             app:popUpTo="@id/authenticationActivity" />
+        <action
+            android:id="@+id/action_dashboard_dest_to_goalEditFragment"
+            app:destination="@id/goalEditFragment"
+            app:popUpTo="@id/dashboard_dest"
+            app:popUpToInclusive="true" />
     </fragment>
     <activity
         android:id="@+id/authenticationActivity"
         android:name="com.apptimistiq.android.fitstreak.authentication.AuthenticationActivity"
         android:label="activity_authentication"
         tools:layout="@layout/activity_authentication" />
+    <fragment
+        android:id="@+id/goalEditFragment"
+        android:name="com.apptimistiq.android.fitstreak.main.dashboard.GoalEditFragment"
+        android:label="GoalEditFragment">
+
+        <argument
+            android:name="goal_info_type"
+            app:argType="com.apptimistiq.android.fitstreak.main.dashboard.GoalUserInfo" />
+        <action
+            android:id="@+id/action_goalEditFragment_to_dashboard_dest"
+            app:destination="@id/dashboard_dest"
+            app:popUpTo="@id/goalEditFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/editActivityFragment"
+        android:name="com.apptimistiq.android.fitstreak.main.progressTrack.EditActivityFragment"
+        android:label="EditActivityFragment">
+        <argument
+            android:name="activity_type"
+            android:defaultValue="DEFAULT"
+            app:argType="com.apptimistiq.android.fitstreak.main.data.domain.ActivityType" />
+        <action
+            android:id="@+id/action_editActivityFragment_to_home_dest"
+            app:destination="@id/home_dest"
+            app:popUpTo="@id/editActivityFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>

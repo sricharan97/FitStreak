@@ -148,7 +148,7 @@ class GoalSelectionFragment : Fragment() {
             setOnValueChangedListener { picker, oldVal, newVal ->
                 Log.d(
                     LOG_TAG,
-                    "Exercise goal has been selected with calories count - ${((newVal * 100) + 100)}"
+                    "Exercise goal has been selected with calories count - ${((newVal * 50) + 50)}"
                 )
                 exerciseCalGoal = ((newVal * 50) + 50)
 

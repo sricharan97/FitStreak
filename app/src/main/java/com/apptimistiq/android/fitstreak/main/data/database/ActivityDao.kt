@@ -21,15 +21,15 @@ interface ActivityDao {
     /**
      * Get the activity details for today
      */
-    @Query("SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') = date('now','start of day','localtime') ")
+    @Query("SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') = date('now','localtime') ")
     fun getTodayActivity(): Flow<Activity>
 
     /**
      * Get the activities for past week
      */
     @Query(
-        "SELECT * FROM activity_store WHERE date(date_of_activity) BETWEEN date('now','-7 days') AND " +
-                "date('now') order by date_of_activity Asc"
+        "SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') BETWEEN date('now','localtime','-7 days') AND " +
+                "date('now','localtime') order by date_of_activity Asc"
     )
     fun getWeekActivities(): Flow<List<Activity>>
 

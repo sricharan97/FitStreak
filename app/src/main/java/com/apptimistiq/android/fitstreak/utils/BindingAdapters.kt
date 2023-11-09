@@ -48,6 +48,9 @@ fun bindActivityIcon(imageView: ImageView, activityType: ActivityType) {
         ActivityType.WATER -> R.drawable.ic_water_glass
         ActivityType.EXERCISE -> R.drawable.ic_exercise_goal
         ActivityType.SLEEP -> R.drawable.ic_sleep_goal
+        else -> {
+            R.drawable.ic_glide_recipe_error
+        }
     }
 
     imageView.setImageResource(imageResource)

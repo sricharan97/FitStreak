@@ -7,8 +7,10 @@ import com.apptimistiq.android.fitstreak.utils.parseRecipeUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,6 +20,7 @@ private const val LOG_TAG = "RecipeRemoteRepository"
 @Singleton
 class RecipeRemoteRepository @Inject constructor(
     private val retrofitService: SpoonacularApiService,
+    private val goalDataSource: GoalDataSource,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RecipeRemoteDataSource {
 
@@ -34,7 +37,7 @@ class RecipeRemoteRepository @Inject constructor(
                     mealType
                 ).results.asDomainModel(mealType)
             )
-        }.flowOn(ioDispatcher)
+        }.flowOn(ioDispatcher).conflate()
 
 
     }
@@ -50,9 +53,17 @@ class RecipeRemoteRepository @Inject constructor(
                     parseRecipeUrl(JSONObject(retrofitService.getRecipeUrl(recipeId)))
                 )
             }
-        }.flowOn(ioDispatcher)
+        }.flowOn(ioDispatcher).conflate()
 
     }
 
+    override fun getRecipeDietType(): Flow<String> {
+        return goalDataSource.dietSelection.flowOn(ioDispatcher)
+    }
 
+    override suspend fun updateRecipeDietType(dietType: String) {
+        withContext(ioDispatcher) {
+            goalDataSource.updateDietSelection(dietType)
+        }
+    }
 }

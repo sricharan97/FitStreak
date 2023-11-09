@@ -50,3 +50,24 @@ fun Activity.asDomainModel(goalPreferences: GoalPreferences): List<ActivityItemU
 
 
 }
+
+fun Activity.asActivityTypeVal(activityType: ActivityType): Int {
+
+    when (activityType) {
+        ActivityType.STEP -> {
+            return this.steps
+        }
+        ActivityType.WATER -> {
+            return this.waterGlasses
+        }
+        ActivityType.EXERCISE -> {
+            return this.exerciseCalories
+        }
+        ActivityType.SLEEP -> {
+            return this.sleepHours
+        }
+        ActivityType.DEFAULT -> {
+            return 0
+        }
+    }
+}

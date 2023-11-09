@@ -21,6 +21,42 @@ class ProgressViewModel @Inject constructor(
 ) : ViewModel() {
 
 
+    //Stateflow variables that keep track of changes in updates to the activity values
+    //to update the google fit repository values as well.
+
+    private val _updateFitSteps = MutableStateFlow(0)
+    val updateFitSteps: StateFlow<Int> = _updateFitSteps
+
+    private val _updateFitWater = MutableStateFlow(0)
+    val updateFitWater: StateFlow<Int> = _updateFitWater
+
+    private val _updateFitSleep = MutableStateFlow(0)
+    val updateFitSleep: StateFlow<Int> = _updateFitSleep
+
+    private val _updateFitExercise = MutableStateFlow(0)
+    val updateFitExercise = _updateFitExercise
+
+    private val _navigateEditActivity = MutableStateFlow(ActivityType.DEFAULT)
+    val navigateEditActivity: StateFlow<ActivityType> = _navigateEditActivity
+
+    private val _navigateBackProgress = MutableStateFlow(false)
+    val navigateBackProgress: StateFlow<Boolean> = _navigateBackProgress
+
+    private val _currentActivityType = MutableStateFlow(ActivityType.DEFAULT)
+    val currentActivityType: StateFlow<ActivityType> = _currentActivityType
+
+    val activityValueCurrent: StateFlow<Int> = _currentActivityType.flatMapLatest {
+        dataSource.getCurrentActivityVal(it)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    private val _displayedActivityValue = MutableStateFlow(0)
+
+    val displayedActivityValue: StateFlow<Int> = _displayedActivityValue
+
     private val _uiState = MutableStateFlow(ProgressTrackUiState())
     val uiState: StateFlow<ProgressTrackUiState> = _uiState
 
@@ -132,6 +168,150 @@ class ProgressViewModel @Inject constructor(
     private fun activitySaved() {
         _uiState.update {
             it.copy(activitySavedForDay = true)
+        }
+    }
+
+
+    fun navigateToEditActivity(activityType: ActivityType) {
+
+
+        _navigateEditActivity.update {
+            activityType
+        }
+        updateCurrentActivityType(activityType)
+
+
+    }
+
+    fun navigateToEditActivityCompleted() {
+        _navigateEditActivity.update {
+            ActivityType.DEFAULT
+        }
+    }
+
+    private fun navigateBackToProgressFragment() {
+        _navigateBackProgress.update { true }
+    }
+
+    fun navigateBackToProgressFragmentCompleted() {
+        _navigateBackProgress.update {
+            false
+        }
+    }
+
+    private fun updateCurrentActivityType(activityType: ActivityType) {
+
+        _currentActivityType.update {
+            activityType
+        }
+
+    }
+
+    fun updateDisplayedActivityVal(value: Int) {
+        _displayedActivityValue.update {
+            value
+        }
+
+    }
+
+
+    fun incrementActivityValue() {
+        _displayedActivityValue.update {
+            it + 1
+        }
+    }
+
+    fun decrementActivityValue() {
+
+        _displayedActivityValue.update {
+            it - 1
+        }
+    }
+
+    fun updateUserActivityVal() {
+        val editActivityItemList = ArrayList<ActivityItemUiState>()
+
+        activityItemsToday.value?.forEach { activityItem ->
+            Log.d(
+                LOG_TAG,
+                "Inside updateUSerActivityVal with current Activity item being ${activityItem.dataType}"
+            )
+
+            Log.d(
+                LOG_TAG,
+                "Inside updateUSerActivityVal with current Activity value ${_currentActivityType.value}"
+            )
+
+            if (_currentActivityType.value == activityItem.dataType) {
+                when (_currentActivityType.value) {
+                    ActivityType.STEP -> {
+                        val updatedVal =
+                            _displayedActivityValue.value - activityItem.currentReading
+                        _updateFitSteps.update { updatedVal }
+                        Log.d(LOG_TAG, "Steps value calculated after edit is $updatedVal")
+                    }
+
+                    ActivityType.SLEEP -> {
+
+                        _updateFitSleep.update { _displayedActivityValue.value }
+                        Log.d(
+                            LOG_TAG,
+                            "sleep value calculated after edit is ${_displayedActivityValue.value}"
+                        )
+                    }
+
+                    ActivityType.EXERCISE -> {
+                        val updatedVal =
+                            _displayedActivityValue.value - activityItem.currentReading
+                        _updateFitExercise.update { updatedVal }
+                        Log.d(LOG_TAG, "exercise value calculated after edit is $updatedVal")
+                    }
+
+                    ActivityType.WATER -> {
+                        val updatedVal =
+                            _displayedActivityValue.value - activityItem.currentReading
+                        _updateFitWater.update { updatedVal }
+                        Log.d(LOG_TAG, "water value calculated after edit is $updatedVal")
+                    }
+                    else -> {}
+                }
+
+
+            }
+            if (_currentActivityType.value == activityItem.dataType) {
+                editActivityItemList.add(activityItem.copy(currentReading = _displayedActivityValue.value))
+            } else {
+                editActivityItemList.add(activityItem)
+            }
+        }
+
+        viewModelScope.launch {
+            dataSource.updateActivity(editActivityItemList, currentDate)
+        }
+        navigateBackToProgressFragment()
+    }
+
+    fun fitStepsUpdated() {
+        _updateFitSteps.update {
+            0
+        }
+    }
+
+    fun fitWaterUpdated() {
+        _updateFitWater.update {
+            0
+        }
+    }
+
+    fun fitExerciseUpdated() {
+        _updateFitExercise.update {
+            0
+        }
+    }
+
+    fun fitSleepUpdated() {
+        _updateFitSleep.update {
+            0
         }
     }
 

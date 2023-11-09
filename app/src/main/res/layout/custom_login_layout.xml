@@ -60,7 +60,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/or_text"
         app:layout_constraintVertical_bias="0.25"
-        app:srcCompat="@drawable/common_google_signin_btn_text_disabled" />
+        app:srcCompat="@drawable/common_google_signin_btn_icon_dark" />
 
     <ImageButton
         android:id="@+id/phone_sign_in_button"

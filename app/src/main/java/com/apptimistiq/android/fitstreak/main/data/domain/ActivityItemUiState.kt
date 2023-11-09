@@ -3,7 +3,7 @@ package com.apptimistiq.android.fitstreak.main.data.domain
 import com.apptimistiq.android.fitstreak.main.data.database.Activity
 
 
-enum class ActivityType { WATER, STEP, SLEEP, EXERCISE }
+enum class ActivityType { WATER, STEP, SLEEP, EXERCISE, DEFAULT }
 
 data class ActivityItemUiState(
     val dataType: ActivityType,
