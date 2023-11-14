@@ -58,10 +58,6 @@ class EditActivityFragment : Fragment() {
 
         when (arguments?.get("act_type")) {
 
-            ActivityType.STEP -> {
-                binding.activityEditType.text = resources.getString(R.string.edit_steps)
-                binding.activityValTag.text = resources.getString(R.string.edit_steps_tag)
-            }
 
             ActivityType.SLEEP -> {
                 binding.activityEditType.text = resources.getString(R.string.edit_sleep)

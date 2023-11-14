@@ -160,14 +160,25 @@ class DailyProgressFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.navigateEditActivity.collect {
-                    if (it != ActivityType.DEFAULT) {
-                        val bundle = bundleOf("act_type" to it)
-                        findNavController().navigate(
-                            R.id.action_home_dest_to_editActivityFragment,
-                            bundle
-                        )
-                        viewModel.navigateToEditActivityCompleted()
+                    when (it) {
+                        ActivityType.DEFAULT -> {}
+                        ActivityType.STEP -> {
+                            Snackbar.make(
+                                binding.progressCoordinatorLayoutRoot,
+                                "Your steps are auto detected",
+                                Snackbar.LENGTH_SHORT
+                            ).show()
+                        }
+                        else -> {
+                            val bundle = bundleOf("act_type" to it)
+                            findNavController().navigate(
+                                R.id.action_home_dest_to_editActivityFragment,
+                                bundle
+                            )
+
+                        }
                     }
+                    viewModel.navigateToEditActivityCompleted()
                 }
             }
         }

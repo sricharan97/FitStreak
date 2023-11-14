@@ -24,9 +24,9 @@ class ProgressViewModel @Inject constructor(
     //Stateflow variables that keep track of changes in updates to the activity values
     //to update the google fit repository values as well.
 
-    private val _updateFitSteps = MutableStateFlow(0)
+   /* private val _updateFitSteps = MutableStateFlow(0)
     val updateFitSteps: StateFlow<Int> = _updateFitSteps
-
+*/
     private val _updateFitWater = MutableStateFlow(0)
     val updateFitWater: StateFlow<Int> = _updateFitWater
 
@@ -54,7 +54,6 @@ class ProgressViewModel @Inject constructor(
     )
 
     private val _displayedActivityValue = MutableStateFlow(0)
-
     val displayedActivityValue: StateFlow<Int> = _displayedActivityValue
 
     private val _uiState = MutableStateFlow(ProgressTrackUiState())
@@ -243,13 +242,14 @@ class ProgressViewModel @Inject constructor(
             )
 
             if (_currentActivityType.value == activityItem.dataType) {
+                editActivityItemList.add(activityItem.copy(currentReading = _displayedActivityValue.value))
                 when (_currentActivityType.value) {
-                    ActivityType.STEP -> {
+                    /*ActivityType.STEP -> {
                         val updatedVal =
                             _displayedActivityValue.value - activityItem.currentReading
                         _updateFitSteps.update { updatedVal }
                         Log.d(LOG_TAG, "Steps value calculated after edit is $updatedVal")
-                    }
+                    }*/
 
                     ActivityType.SLEEP -> {
 
@@ -277,12 +277,10 @@ class ProgressViewModel @Inject constructor(
                 }
 
 
-            }
-            if (_currentActivityType.value == activityItem.dataType) {
-                editActivityItemList.add(activityItem.copy(currentReading = _displayedActivityValue.value))
             } else {
                 editActivityItemList.add(activityItem)
             }
+
         }
 
         viewModelScope.launch {
@@ -291,11 +289,6 @@ class ProgressViewModel @Inject constructor(
         navigateBackToProgressFragment()
     }
 
-    fun fitStepsUpdated() {
-        _updateFitSteps.update {
-            0
-        }
-    }
 
     fun fitWaterUpdated() {
         _updateFitWater.update {
