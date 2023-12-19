@@ -10,6 +10,8 @@ import com.apptimistiq.android.fitstreak.main.data.domain.ProgressTrackUiState
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 
@@ -24,9 +26,14 @@ class ProgressViewModel @Inject constructor(
     //Stateflow variables that keep track of changes in updates to the activity values
     //to update the google fit repository values as well.
 
-   /* private val _updateFitSteps = MutableStateFlow(0)
-    val updateFitSteps: StateFlow<Int> = _updateFitSteps
-*/
+    /* private val _updateFitSteps = MutableStateFlow(0)
+     val updateFitSteps: StateFlow<Int> = _updateFitSteps
+
+ */
+
+    //Get current time to track the workout start and end times
+    private val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+
     private val _updateFitWater = MutableStateFlow(0)
     val updateFitWater: StateFlow<Int> = _updateFitWater
 
@@ -35,6 +42,13 @@ class ProgressViewModel @Inject constructor(
 
     private val _updateFitExercise = MutableStateFlow(0)
     val updateFitExercise = _updateFitExercise
+
+    val updateFitExerciseStartTime = MutableStateFlow(currentTime)
+    val updateFitExerciseStartTimeObs = updateFitExerciseStartTime
+
+    val updateFitExerciseEndTime = MutableStateFlow(currentTime)
+    val updateFitExerciseEndTimeObs = updateFitExerciseEndTime
+
 
     private val _navigateEditActivity = MutableStateFlow(ActivityType.DEFAULT)
     val navigateEditActivity: StateFlow<ActivityType> = _navigateEditActivity
@@ -53,7 +67,7 @@ class ProgressViewModel @Inject constructor(
         initialValue = 0
     )
 
-    private val _displayedActivityValue = MutableStateFlow(0)
+    val _displayedActivityValue = MutableStateFlow(0)
     val displayedActivityValue: StateFlow<Int> = _displayedActivityValue
 
     private val _uiState = MutableStateFlow(ProgressTrackUiState())
@@ -242,7 +256,7 @@ class ProgressViewModel @Inject constructor(
             )
 
             if (_currentActivityType.value == activityItem.dataType) {
-                editActivityItemList.add(activityItem.copy(currentReading = _displayedActivityValue.value))
+
                 when (_currentActivityType.value) {
                     /*ActivityType.STEP -> {
                         val updatedVal =
@@ -252,6 +266,7 @@ class ProgressViewModel @Inject constructor(
                     }*/
 
                     ActivityType.SLEEP -> {
+                        editActivityItemList.add(activityItem.copy(currentReading = _displayedActivityValue.value))
 
                         _updateFitSleep.update { _displayedActivityValue.value }
                         Log.d(
@@ -261,13 +276,19 @@ class ProgressViewModel @Inject constructor(
                     }
 
                     ActivityType.EXERCISE -> {
-                        val updatedVal =
-                            _displayedActivityValue.value - activityItem.currentReading
+                        val updatedVal = _displayedActivityValue.value
+                        editActivityItemList.add(
+                            activityItem.copy(
+                                currentReading =
+                                _displayedActivityValue.value + activityItem.currentReading
+                            )
+                        )
                         _updateFitExercise.update { updatedVal }
                         Log.d(LOG_TAG, "exercise value calculated after edit is $updatedVal")
                     }
 
                     ActivityType.WATER -> {
+                        editActivityItemList.add(activityItem.copy(currentReading = _displayedActivityValue.value))
                         val updatedVal =
                             _displayedActivityValue.value - activityItem.currentReading
                         _updateFitWater.update { updatedVal }

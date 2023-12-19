@@ -33,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -56,7 +57,7 @@ class DailyProgressFragment : Fragment() {
 
     //create fitnessOptions instance declaring the data types our app need
     private val fitnessOptions = FitnessOptions.builder()
-        .addDataType(TYPE_STEP_COUNT_CUMULATIVE, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
         .addDataType(TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
         .addDataType(TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_WRITE)
         .addDataType(TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
@@ -76,6 +77,7 @@ class DailyProgressFragment : Fragment() {
     private lateinit var historyClient: HistoryClient
 
     private lateinit var sessionsClient: SessionsClient
+
 
     //list of Data types required for the app
     private val dataTypeList = listOf(
@@ -209,7 +211,10 @@ class DailyProgressFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.updateFitExercise.collect {
                     if (it != 0) {
-                        addCaloriesData(it)
+                        addCaloriesData(
+                            it, viewModel.updateFitExerciseStartTimeObs.value,
+                            viewModel.updateFitExerciseEndTimeObs.value
+                        )
                         viewModel.fitExerciseUpdated()
                     }
                 }
@@ -323,19 +328,24 @@ class DailyProgressFragment : Fragment() {
 
     }
 
+
     private fun readDailyCaloriesExpended() {
         //addHeightAndWeight()
 
+
         historyClient.readDailyTotal(dataTypeList[1])
             .addOnSuccessListener { result ->
-                val totalCalories =
+                val existingCalories =
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_CALORIES)?.asFloat()
                         ?.toInt() ?: 0
                 caloriesEndTime = result.dataPoints.firstOrNull()?.getEndTime(TimeUnit.MILLISECONDS)
                     ?: DateTime.now().millis
+                viewModel.addCalories(existingCalories)
 
-                Log.d(LOG_TAG, "Total calories expended until now are : $totalCalories")
-                viewModel.addCalories(totalCalories)
+                Log.d(
+                    LOG_TAG,
+                    "Total calories expended until now at time : $caloriesEndTime are : $existingCalories"
+                )
 
             }
             .addOnFailureListener { e ->
@@ -427,8 +437,21 @@ class DailyProgressFragment : Fragment() {
 
     }
 
-    private fun addCaloriesData(caloriesExpended: Int) {
+    private fun addCaloriesData(caloriesExpended: Int, startTime: String, endTime: String) {
         Log.d(LOG_TAG, "inside addCalories data with value being $caloriesExpended")
+        val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm")
+        val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
+        val currentDate = DateTime.now().toString(dateFormat)
+        val startDateTime = "$currentDate $startTime"
+        val endDateTime = "$currentDate $endTime"
+
+        val startTimeInterval = formatter.parseDateTime(startDateTime).millis
+        val endTimeInterval = formatter.parseDateTime(endDateTime).millis
+        Log.d(
+            LOG_TAG,
+            "startTimeString passed :$startTimeInterval and endTimeString passed: $endTimeInterval"
+        )
+
 
         val caloriesDataSource = DataSource.Builder()
             .setAppPackageName(getString(R.string.app_package))
@@ -439,24 +462,32 @@ class DailyProgressFragment : Fragment() {
         val caloriesDataPoint = DataPoint.builder(caloriesDataSource)
             .setField(Field.FIELD_CALORIES, caloriesExpended.toFloat())
             .setTimeInterval(
-                DateTime.now().millis,
-                DateTime.now().plusMinutes(1).millis,
+                startTimeInterval,
+                endTimeInterval,
                 TimeUnit.MILLISECONDS
             )
             .build()
 
-        val caloriesDataset = DataSet.builder(caloriesDataSource)
-            .add(caloriesDataPoint)
-            .build()
+        try {
+            val caloriesDataset = DataSet.builder(caloriesDataSource)
+                .add(caloriesDataPoint)
+                .build()
 
-        historyClient.insertData(caloriesDataset)
-            .addOnSuccessListener {
-                Log.d(LOG_TAG, "Successfully inserted the calories data of $caloriesExpended")
+            historyClient.insertData(caloriesDataset)
+                .addOnSuccessListener {
+                    Log.d(LOG_TAG, "Successfully inserted the calories data of $caloriesExpended")
 
-            }
-            .addOnFailureListener {
-                Log.d(LOG_TAG, "Failed to add calories data due to the exception - ${it.message}")
-            }
+                }
+                .addOnFailureListener {
+                    Log.d(
+                        LOG_TAG,
+                        "Failed to add calories data due to the exception - ${it.message}"
+                    )
+                }
+        } catch (e: IllegalArgumentException) {
+            Log.d(LOG_TAG, "data point out of range : ${e.message}")
+        }
+
 
     }
 
@@ -464,6 +495,8 @@ class DailyProgressFragment : Fragment() {
     private fun addHydrationData(waterLitresConsumed: Int) {
 
         val timestamp = DateTime().minusHours(1).millis
+
+        Log.d(LOG_TAG, "timestamp passed for hydration data :$timestamp ")
 
         // Create a data source
         val hydrationDataSource = DataSource.Builder()

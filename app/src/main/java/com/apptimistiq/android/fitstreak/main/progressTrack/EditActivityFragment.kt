@@ -1,11 +1,16 @@
 package com.apptimistiq.android.fitstreak.main.progressTrack
 
+import android.app.Dialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.TimePicker
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -15,16 +20,23 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.databinding.FragmentAddWorkoutBinding
 import com.apptimistiq.android.fitstreak.databinding.FragmentEditActivityBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 import javax.inject.Inject
+
+private const val LOG_TAG = "EditActivityFragment"
 
 
 class EditActivityFragment : Fragment() {
 
     private lateinit var binding: FragmentEditActivityBinding
+    private lateinit var bindingWorkout: FragmentAddWorkoutBinding
 
     // @Inject annotated fields will be provided by Dagger
     @Inject
@@ -39,14 +51,29 @@ class EditActivityFragment : Fragment() {
             .inject(this)
     }
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
+        bindingWorkout =
+            DataBindingUtil.inflate(inflater, R.layout.fragment_add_workout, container, false)
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_edit_activity, container, false)
-        return binding.root
+
+        //Return the binding layout based on the selected activity type
+        return when (arguments?.get("act_type")) {
+            ActivityType.EXERCISE -> {
+                bindingWorkout.root
+            }
+            else -> {
+                binding.root
+
+            }
+        }
+
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,6 +82,9 @@ class EditActivityFragment : Fragment() {
 
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+
+        bindingWorkout.lifecycleOwner = this
+        bindingWorkout.viewModel = viewModel
 
         when (arguments?.get("act_type")) {
 
@@ -65,14 +95,24 @@ class EditActivityFragment : Fragment() {
             }
 
             ActivityType.EXERCISE -> {
-                binding.activityEditType.text = resources.getString(R.string.edit_exercise)
-                binding.activityValTag.text = resources.getString(R.string.edit_exercise_tag)
+                bindingWorkout.addWorkoutEditTitle.text =
+                    resources.getString(R.string.edit_exercise)
+                bindingWorkout.caloriesText.text = resources.getString(R.string.edit_exercise_tag)
             }
 
             ActivityType.WATER -> {
                 binding.activityEditType.text = resources.getString(R.string.edit_water)
                 binding.activityValTag.text = resources.getString(R.string.edit_water_tag)
             }
+        }
+
+        //
+        bindingWorkout.startTimeValue.setOnClickListener {
+            TimePickerFragment(it as EditText).show(childFragmentManager, LOG_TAG)
+        }
+
+        bindingWorkout.endTimeValue.setOnClickListener {
+            TimePickerFragment(it as EditText).show(childFragmentManager, LOG_TAG)
         }
 
 
@@ -97,4 +137,28 @@ class EditActivityFragment : Fragment() {
 
 
     }
+}
+
+class TimePickerFragment(private val textValue: EditText) : DialogFragment(),
+    TimePickerDialog.OnTimeSetListener {
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        // Use the current time as the default values for the picker
+        val currentTime = Calendar.getInstance()
+        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val minute = currentTime.get(Calendar.MINUTE)
+
+        // Create a new instance of TimePickerDialog and return it
+        return TimePickerDialog(activity, this, hour, minute, false)
+    }
+
+
+    override fun onTimeSet(view: TimePicker?, hourOfDay: Int, minute: Int) {
+        //Assign the formatted time string to the start
+        textValue.setText(
+            LocalTime.of(hourOfDay, minute).format(DateTimeFormatter.ofPattern("HH:mm"))
+        )
+
+    }
+
 }

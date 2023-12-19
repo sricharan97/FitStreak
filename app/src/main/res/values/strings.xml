@@ -75,7 +75,7 @@
     <string name="edit_water">Add water</string>
     <string name="edit_steps_tag">steps</string>
     <string name="edit_water_tag">litres</string>
-    <string name="edit_exercise_tag">calories</string>
+    <string name="edit_exercise_tag">Calories</string>
     <string name="edit_sleep_tag">hours</string>
 
 </resources>
