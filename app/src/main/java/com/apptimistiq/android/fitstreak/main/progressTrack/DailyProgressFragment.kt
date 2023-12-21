@@ -40,6 +40,9 @@ import javax.inject.Inject
 private const val GOOGLE_FIT_PERMISSION_REQUEST_CODE = 101
 private const val LOG_TAG = "DailyProgressFragment"
 
+/**Define a Enum class to decide whether to update the user entered activity value or to just
+// read from the fit store **/
+enum class UpdateType { SYSTEM_REQUEST, USER_REQUEST }
 
 class DailyProgressFragment : Fragment() {
 
@@ -142,10 +145,10 @@ class DailyProgressFragment : Fragment() {
                         and !uiState.readCalories and !uiState.readSleepHrs and !uiState.readWaterLitres
                     ) {
                         Log.d(LOG_TAG, "about to call reading steps inside observer")
-                        readDailyHydrationTotal()
-                        readDailySleepHrsTotal()
                         readDailyStepsTotal()
-                        readDailyCaloriesExpended()
+                        readDailyHydrationTotal(UpdateType.SYSTEM_REQUEST)
+                        readDailySleepHrsTotal(UpdateType.SYSTEM_REQUEST)
+                        readDailyCaloriesExpended(UpdateType.SYSTEM_REQUEST)
 
                     } else if (uiState.readSteps and uiState.readWaterLitres and uiState.readCalories
                         and !uiState.activitySavedForDay
@@ -329,22 +332,27 @@ class DailyProgressFragment : Fragment() {
     }
 
 
-    private fun readDailyCaloriesExpended() {
+    private fun readDailyCaloriesExpended(updateType: UpdateType) {
         //addHeightAndWeight()
 
 
         historyClient.readDailyTotal(dataTypeList[1])
             .addOnSuccessListener { result ->
-                val existingCalories =
+                val totalCalories =
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_CALORIES)?.asFloat()
                         ?.toInt() ?: 0
                 caloriesEndTime = result.dataPoints.firstOrNull()?.getEndTime(TimeUnit.MILLISECONDS)
                     ?: DateTime.now().millis
-                viewModel.addCalories(existingCalories)
+
+                when (updateType) {
+                    UpdateType.SYSTEM_REQUEST -> viewModel.addCalories(totalCalories)
+                    UpdateType.USER_REQUEST -> viewModel.updateUserEnteredValues(totalCalories)
+                }
+
 
                 Log.d(
                     LOG_TAG,
-                    "Total calories expended until now at time : $caloriesEndTime are : $existingCalories"
+                    "Total calories expended until now at time : $caloriesEndTime are : $totalCalories"
                 )
 
             }
@@ -417,7 +425,7 @@ class DailyProgressFragment : Fragment() {
 
 
     */
-    private fun readDailyHydrationTotal() {
+    private fun readDailyHydrationTotal(updateType: UpdateType) {
 
         historyClient.readDailyTotal(dataTypeList[2])
             .addOnSuccessListener { result ->
@@ -425,7 +433,10 @@ class DailyProgressFragment : Fragment() {
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_VOLUME)?.asFloat()
                         ?.toInt() ?: 0
                 Log.d(LOG_TAG, "Total water consumed until now in litres is : $totalLitres")
-                viewModel.addLitres(totalLitres)
+                when (updateType) {
+                    UpdateType.SYSTEM_REQUEST -> viewModel.addLitres(totalLitres)
+                    UpdateType.USER_REQUEST -> viewModel.updateUserEnteredValues(totalLitres)
+                }
 
             }
             .addOnFailureListener { e ->
@@ -436,6 +447,7 @@ class DailyProgressFragment : Fragment() {
             }
 
     }
+
 
     private fun addCaloriesData(caloriesExpended: Int, startTime: String, endTime: String) {
         Log.d(LOG_TAG, "inside addCalories data with value being $caloriesExpended")
@@ -475,6 +487,7 @@ class DailyProgressFragment : Fragment() {
 
             historyClient.insertData(caloriesDataset)
                 .addOnSuccessListener {
+                    readDailyCaloriesExpended(UpdateType.USER_REQUEST)
                     Log.d(LOG_TAG, "Successfully inserted the calories data of $caloriesExpended")
 
                 }
@@ -490,6 +503,7 @@ class DailyProgressFragment : Fragment() {
 
 
     }
+
 
 
     private fun addHydrationData(waterLitresConsumed: Int) {
@@ -517,6 +531,7 @@ class DailyProgressFragment : Fragment() {
 
         historyClient.insertData(hydrationDataSet)
             .addOnSuccessListener {
+                readDailyHydrationTotal(UpdateType.USER_REQUEST)
                 Log.d(LOG_TAG, "Successfully inserted the water data of $waterLitresConsumed")
 
             }
@@ -530,7 +545,7 @@ class DailyProgressFragment : Fragment() {
     /**
      * Work with Sessions to read the sleep session data
      */
-    private fun readDailySleepHrsTotal() {
+    private fun readDailySleepHrsTotal(updateType: UpdateType) {
 
         val endTime = DateTime.now()
         val startTime = endTime.minusDays(1)
@@ -553,7 +568,10 @@ class DailyProgressFragment : Fragment() {
                     val sessionEnd = session.getEndTime(TimeUnit.HOURS)
                     val sleepHrs = (sessionEnd - sessionStart).toInt()
                     Log.d(LOG_TAG, "Total sleep hours are : $sleepHrs")
-                    viewModel.addSleepHrs(sleepHrs)
+                    when (updateType) {
+                        UpdateType.SYSTEM_REQUEST -> viewModel.addSleepHrs(sleepHrs)
+                        UpdateType.USER_REQUEST -> viewModel.updateUserEnteredValues(sleepHrs)
+                    }
                 }
 
             }.addOnFailureListener { e ->
@@ -591,6 +609,7 @@ class DailyProgressFragment : Fragment() {
 
         sessionsClient.insertSession(request)
             .addOnSuccessListener {
+                readDailySleepHrsTotal(UpdateType.USER_REQUEST)
                 Log.d(LOG_TAG, "inserted the sleep hrs - ${(sleepEnd - sleepStart).div(3600000)}")
 
             }
