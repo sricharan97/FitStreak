@@ -4,9 +4,9 @@ import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.apptimistiq.android.fitstreak.main.data.GoalPreferences
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalPreferences
 
 @Entity(tableName = "activity_store")
 data class Activity(

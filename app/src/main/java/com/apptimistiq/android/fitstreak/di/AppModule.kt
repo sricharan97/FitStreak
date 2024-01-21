@@ -16,10 +16,10 @@ abstract class AppModule {
     @Binds
     abstract fun bindActivityDataSource(activityLocalRepository: ActivityLocalRepository): ActivityDataSource
 
-    //Makes Dagger provide GoalsRepository when a GoalDataSource is requested
+    //Makes Dagger provide UserProfileRepository when a UserProfileDataSource is requested
     @Singleton
     @Binds
-    abstract fun bindGoalDataSource(goalRepository: GoalsRepository): GoalDataSource
+    abstract fun bindGoalDataSource(goalRepository: UserProfileRepository): UserProfileDataSource
 
     //Makes Dagger provide RecipeRemoteRepository when a RecipeRemoteDatasource is requested
     @Singleton

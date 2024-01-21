@@ -5,8 +5,8 @@ import com.apptimistiq.android.fitstreak.authentication.di.AuthenticationCompone
 import com.apptimistiq.android.fitstreak.main.dashboard.di.DashboardComponent
 import com.apptimistiq.android.fitstreak.main.dashboard.di.GoalEditComponent
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
-import com.apptimistiq.android.fitstreak.main.data.GoalDataSource
 import com.apptimistiq.android.fitstreak.main.data.RecipeRemoteDataSource
+import com.apptimistiq.android.fitstreak.main.data.UserProfileDataSource
 import com.apptimistiq.android.fitstreak.main.progressTrack.di.DailyProgressComponent
 import com.apptimistiq.android.fitstreak.main.progressTrack.di.EditActivityComponent
 import com.apptimistiq.android.fitstreak.main.recipe.di.RecipesTrackComponent
@@ -43,7 +43,7 @@ interface AppComponent {
     fun EditActivityComponent(): EditActivityComponent.Factory
 
     val activityDataSource: ActivityDataSource
-    val goalDataSource: GoalDataSource
+    val userProfileDataSource: UserProfileDataSource
     val recipeRemoteDataSource: RecipeRemoteDataSource
 
 }
