@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -31,7 +31,7 @@ class DashboardFragment : Fragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val viewModel by activityViewModels<DashboardViewModel> { viewModelFactory }
+    private val viewModel by viewModels<DashboardViewModel> { viewModelFactory }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

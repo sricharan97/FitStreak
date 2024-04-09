@@ -1,6 +1,7 @@
 package com.apptimistiq.android.fitstreak.authentication.onboarding
 
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,18 +9,34 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.FragmentLoginBinding
 import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
+
+    // @Inject annotated fields will be provided by Dagger
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel by activityViewModels<AuthenticationViewModel> { viewModelFactory }
 
     companion object {
         const val TAG = "Login Fragment"
@@ -30,6 +47,11 @@ class LoginFragment : Fragment() {
             this.onSignInResult(res)
         }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        (requireActivity().application as FitApp).appComponent.authenticationComponent().create()
+            .inject(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,6 +71,24 @@ class LoginFragment : Fragment() {
 
         binding.helloButton.setOnClickListener {
             launchSignInFlow()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                viewModel.signInFlowStatus.collect {
+                    if (it) {
+                        if (viewModel.userState.value.isOnboarded) {
+                            navigateHomeAfterSuccessfulLogin()
+                        } else {
+                            navigateOnboardingFlow()
+                        }
+
+                        viewModel.signInFlowReset()
+                    }
+                }
+
+            }
         }
 
     }
@@ -93,7 +133,8 @@ class LoginFragment : Fragment() {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
 
-            navigateOnboardingFlow()
+            viewModel.signInFlowCompleted()
+
         } else {
             //TODO: Sign in failed, If response is null the user canceled the
             //    // sign-in flow using the back button. Otherwise check
