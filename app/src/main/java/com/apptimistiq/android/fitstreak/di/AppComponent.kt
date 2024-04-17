@@ -2,7 +2,7 @@ package com.apptimistiq.android.fitstreak.di
 
 import android.content.Context
 import com.apptimistiq.android.fitstreak.authentication.di.AuthenticationComponent
-import com.apptimistiq.android.fitstreak.authentication.di.GoalSelectionComponent
+import com.apptimistiq.android.fitstreak.authentication.di.LoginComponent
 import com.apptimistiq.android.fitstreak.main.dashboard.di.DashboardComponent
 import com.apptimistiq.android.fitstreak.main.dashboard.di.GoalEditComponent
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
@@ -42,7 +42,7 @@ interface AppComponent {
     fun DashboardComponent(): DashboardComponent.Factory
     fun GoalEditComponent(): GoalEditComponent.Factory
     fun EditActivityComponent(): EditActivityComponent.Factory
-    fun goalSelectionComponent(): GoalSelectionComponent.Factory
+    fun loginComponent(): LoginComponent.Factory
 
     val activityDataSource: ActivityDataSource
     val userProfileDataSource: UserProfileDataSource
@@ -53,6 +53,6 @@ interface AppComponent {
 @Module(
     subcomponents = [DailyProgressComponent::class, AuthenticationComponent::class,
         RecipesTrackComponent::class, DashboardComponent::class, GoalEditComponent::class,
-        EditActivityComponent::class, GoalSelectionComponent::class]
+        EditActivityComponent::class, LoginComponent::class]
 )
 object SubComponentsModule

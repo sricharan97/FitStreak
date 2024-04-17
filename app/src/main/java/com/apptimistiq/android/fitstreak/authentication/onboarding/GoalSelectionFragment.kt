@@ -45,7 +45,7 @@ class GoalSelectionFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (requireActivity().application as FitApp).appComponent.goalSelectionComponent().create()
+        (requireActivity().application as FitApp).appComponent.authenticationComponent().create()
             .inject(
                 this
             )

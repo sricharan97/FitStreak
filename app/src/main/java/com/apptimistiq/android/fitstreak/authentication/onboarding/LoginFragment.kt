@@ -49,7 +49,7 @@ class LoginFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        (requireActivity().application as FitApp).appComponent.authenticationComponent().create()
+        (requireActivity().application as FitApp).appComponent.loginComponent().create()
             .inject(this)
     }
 

@@ -64,6 +64,7 @@ class DailyProgressFragment : Fragment() {
         .addDataType(TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
         .addDataType(TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_WRITE)
         .addDataType(TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_READ)
+        .addDataType(TYPE_SLEEP_SEGMENT, FitnessOptions.ACCESS_WRITE)
         .addDataType(TYPE_HYDRATION, FitnessOptions.ACCESS_WRITE)
         .addDataType(TYPE_HYDRATION, FitnessOptions.ACCESS_READ)
         .addDataType(TYPE_WEIGHT, FitnessOptions.ACCESS_WRITE)
@@ -146,8 +147,11 @@ class DailyProgressFragment : Fragment() {
                     ) {
                         Log.d(LOG_TAG, "about to call reading steps inside observer")
                         readDailyStepsTotal()
+                        Log.d(LOG_TAG, "about to call reading water inside observer")
                         readDailyHydrationTotal(UpdateType.SYSTEM_REQUEST)
+                        Log.d(LOG_TAG, "about to call reading sleep hours inside observer")
                         readDailySleepHrsTotal(UpdateType.SYSTEM_REQUEST)
+                        Log.d(LOG_TAG, "about to call reading calories inside observer")
                         readDailyCaloriesExpended(UpdateType.SYSTEM_REQUEST)
 
                     } else if (uiState.readSteps and uiState.readWaterLitres and uiState.readCalories
@@ -559,7 +563,7 @@ class DailyProgressFragment : Fragment() {
             .build()
 
         //Read the sleep session using sessions client
-
+        Log.d(LOG_TAG, "Trying to read the sleep hours for the day")
         sessionsClient.readSession(sessionReadRequest)
             .addOnSuccessListener { response ->
 

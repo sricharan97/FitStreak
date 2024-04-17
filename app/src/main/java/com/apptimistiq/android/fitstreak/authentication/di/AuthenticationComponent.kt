@@ -1,6 +1,6 @@
 package com.apptimistiq.android.fitstreak.authentication.di
 
-import com.apptimistiq.android.fitstreak.authentication.onboarding.LoginFragment
+import com.apptimistiq.android.fitstreak.authentication.onboarding.GoalSelectionFragment
 import dagger.Subcomponent
 
 @Subcomponent(modules = [AuthenticationModule::class])
@@ -11,5 +11,5 @@ interface AuthenticationComponent {
         fun create(): AuthenticationComponent
     }
 
-    fun inject(fragment: LoginFragment)
+    fun inject(fragment: GoalSelectionFragment)
 }
