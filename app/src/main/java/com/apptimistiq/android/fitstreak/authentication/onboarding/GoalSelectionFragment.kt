@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
@@ -16,6 +16,7 @@ import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.authentication.GoalType
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
+import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
 import javax.inject.Inject
 
 
@@ -35,7 +36,7 @@ class GoalSelectionFragment : Fragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val viewModel by viewModels<AuthenticationViewModel> { viewModelFactory }
+    private val viewModel by activityViewModels<AuthenticationViewModel> { viewModelFactory }
 
     private var stepCountGoal = 1000
     private var waterGlassesGoal = 0
@@ -160,6 +161,7 @@ class GoalSelectionFragment : Fragment() {
     //Navigate to Home screen
     private fun navigateToHomeDest() {
 
+        viewModel.saveUserStateInfo(UserStateInfo(isOnboarded = true))
         findNavController().navigate(GoalSelectionFragmentDirections.actionGoalSelectionFragmentToMainActivity())
 
     }
