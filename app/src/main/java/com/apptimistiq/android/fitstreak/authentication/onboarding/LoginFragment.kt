@@ -80,6 +80,7 @@ class LoginFragment : Fragment() {
                     if (it) {
                         if (viewModel.userState.value.isOnboarded) {
                             navigateHomeAfterSuccessfulLogin()
+                            requireActivity().finish()
                         } else {
                             navigateOnboardingFlow()
                         }
