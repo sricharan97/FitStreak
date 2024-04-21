@@ -17,7 +17,10 @@
             app:popUpTo="@id/authenticationActivity" />
         <action
             android:id="@+id/action_home_dest_to_editActivityFragment"
-            app:destination="@id/editActivityFragment" />
+            app:destination="@id/editActivityFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/home_dest"
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/recipe_dest"
@@ -70,6 +73,7 @@
         <action
             android:id="@+id/action_editActivityFragment_to_home_dest"
             app:destination="@id/home_dest"
+            app:launchSingleTop="true"
             app:popUpTo="@id/editActivityFragment"
             app:popUpToInclusive="true" />
     </fragment>
