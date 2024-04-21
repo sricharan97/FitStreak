@@ -3,6 +3,9 @@ package com.apptimistiq.android.fitstreak.main.data
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalPreferences
+import com.apptimistiq.android.fitstreak.main.data.domain.UserInfoPreferences
+import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -11,19 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 
-private const val LOG_TAG = "GoalsRepository"
+private const val LOG_TAG = "UserProfileRepository"
 
-data class GoalPreferences(
-    val stepGoal: Int = 0,
-    val waterGlassGoal: Int = 0,
-    val sleepGoal: Int = 0,
-    val exerciseGoal: Int = 0
-)
 
-data class UserInfoPreferences(
-    val height: Int,
-    val weight: Int
-)
 
 data class RecipeDietPreferences(
     val dietSelection: String
@@ -31,9 +24,9 @@ data class RecipeDietPreferences(
 
 // @Inject tells Dagger how to provide instances of this type
 @Singleton
-class GoalsRepository @Inject constructor(
-    private val goalPreferencesStore: DataStore<Preferences>
-) : GoalDataSource {
+class UserProfileRepository @Inject constructor(
+    private val userProfilePreferencesStore: DataStore<Preferences>
+) : UserProfileDataSource {
 
 
     //Define PreferenceKeys
@@ -45,40 +38,43 @@ class GoalsRepository @Inject constructor(
         val HEIGHT_INFO = intPreferencesKey("userHeight")
         val WEIGHT_INFO = intPreferencesKey("userWeight")
         val DIET_SELECTION = stringPreferencesKey("diet_selection")
+        val USER_LOGGED_IN = booleanPreferencesKey("user_logged_in")
+        val USER_NAME = stringPreferencesKey("user_name")
+        val USER_ONBOARDED = booleanPreferencesKey("user_onboarded")
     }
 
     override val stepsGoal: Flow<Int>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.STEP_GOAL] ?: 0
         }
     override val sleepGoal: Flow<Int>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.SLEEP_GOAL] ?: 0
         }
     override val waterGoal: Flow<Int>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.WATER_GLASS_GOAL] ?: 0
         }
     override val exerciseGoal: Flow<Int>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.EXERCISE_GOAL] ?: 0
         }
     override val heightInfo: Flow<Int>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.HEIGHT_INFO] ?: 168
         }
     override val weightInfo: Flow<Int>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.WEIGHT_INFO] ?: 60
         }
 
     override val dietSelection: Flow<String>
-        get() = goalPreferencesStore.data.map { value: Preferences ->
+        get() = userProfilePreferencesStore.data.map { value: Preferences ->
             value[PreferenceKeys.DIET_SELECTION] ?: "Vegetarian"
         }
 
     //Expose the goalPreferences as a flow
-    override val goalPreferences: Flow<GoalPreferences> = goalPreferencesStore.data
+    override val goalPreferences: Flow<GoalPreferences> = userProfilePreferencesStore.data
         .catch { exception ->
             // dataStore.data throws an IOException when an error is encountered when reading data
             if (exception is IOException) {
@@ -110,7 +106,7 @@ class GoalsRepository @Inject constructor(
         }
 
 
-    override val userInfoPreferences: Flow<UserInfoPreferences> = goalPreferencesStore.data
+    override val userInfoPreferences: Flow<UserInfoPreferences> = userProfilePreferencesStore.data
         .catch { exception ->
             // dataStore.data throws an IOException when an error is encountered when reading data
             if (exception is IOException) {
@@ -139,11 +135,39 @@ class GoalsRepository @Inject constructor(
             UserInfoPreferences(height, weight)
 
         }
+    override val userStateInfo: Flow<UserStateInfo>
+        get() = userProfilePreferencesStore.data.catch { exception ->
+            // dataStore.data throws an IOException when an error is encountered when reading data
+            if (exception is IOException) {
+                Log.d(
+                    LOG_TAG,
+                    "IO Exception occurred while reading from the datastore : ${exception.message}"
+                )
+                emit(emptyPreferences())
+                Log.d(
+                    LOG_TAG,
+                    "IO Exception occurred while reading from the datastore : ${exception.message}"
+                )
+            } else {
+                Log.d(
+                    LOG_TAG,
+                    "Exception occurred while reading from the datastore : ${exception.message}"
+                )
+                throw exception
+            }
+
+        }
+            .map { value: Preferences ->
+                val userLoggedIn = value[PreferenceKeys.USER_LOGGED_IN] ?: false
+                val userName = value[PreferenceKeys.USER_NAME] ?: "User"
+                val userOnboarded = value[PreferenceKeys.USER_ONBOARDED] ?: false
+                UserStateInfo(userName, userLoggedIn, userOnboarded)
+            }
 
     //Store the stepGoal preference
     override suspend fun updateStepGoal(steps: Int) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.STEP_GOAL] = steps
             }
         } catch (exception: IOException) {
@@ -155,7 +179,7 @@ class GoalsRepository @Inject constructor(
     //Store the sleepGoal preference
     override suspend fun updateSleepGoal(sleepHrs: Int) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.SLEEP_GOAL] = sleepHrs
             }
         } catch (exception: IOException) {
@@ -167,7 +191,7 @@ class GoalsRepository @Inject constructor(
     //Store the exerciseGoal preference
     override suspend fun updateExerciseGoal(exerciseCal: Int) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.EXERCISE_GOAL] = exerciseCal
             }
         } catch (exception: IOException) {
@@ -179,7 +203,7 @@ class GoalsRepository @Inject constructor(
     //Store the waterGlassesGoal preference
     override suspend fun updateWaterGlassesGoal(waterGlass: Int) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.WATER_GLASS_GOAL] = waterGlass
             }
         } catch (exception: IOException) {
@@ -190,7 +214,7 @@ class GoalsRepository @Inject constructor(
 
     override suspend fun updateUserHeight(userHeight: Int) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.HEIGHT_INFO] = userHeight
 
             }
@@ -203,7 +227,7 @@ class GoalsRepository @Inject constructor(
 
     override suspend fun updateUserWeight(userWeight: Int) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.WEIGHT_INFO] = userWeight
 
             }
@@ -216,13 +240,26 @@ class GoalsRepository @Inject constructor(
 
     override suspend fun updateDietSelection(dietType: String) {
         try {
-            goalPreferencesStore.edit { preferences ->
+            userProfilePreferencesStore.edit { preferences ->
                 preferences[PreferenceKeys.DIET_SELECTION] = dietType
 
             }
 
         } catch (exception: IOException) {
             Log.e(LOG_TAG, "There is an IO exception while saving the dietSelection ")
+            throw exception
+        }
+    }
+
+    override suspend fun updateUserStateInfo(userStateInfo: UserStateInfo) {
+        try {
+            userProfilePreferencesStore.edit { preferences ->
+                preferences[PreferenceKeys.USER_LOGGED_IN] = userStateInfo.isUserLoggedIn
+                preferences[PreferenceKeys.USER_NAME] = userStateInfo.userName
+                preferences[PreferenceKeys.USER_ONBOARDED] = userStateInfo.isOnboarded
+            }
+        } catch (exception: IOException) {
+            Log.e(LOG_TAG, "There is an IO exception while saving the userStateInfo ")
             throw exception
         }
     }

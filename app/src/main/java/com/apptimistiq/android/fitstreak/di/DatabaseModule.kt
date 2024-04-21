@@ -20,7 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
 
-private const val GOAL_PREFERENCES_NAME = "goal_preferences"
+private const val USER_PROFILE_PREFERENCES_NAME = "user_profile_preferences"
 
 
 @Module
@@ -33,6 +33,7 @@ object DatabaseModule {
     fun providesActivityDao(activityDatabase: ActivityDatabase): ActivityDao {
         return activityDatabase.getActivityDao()
     }
+
 
     @JvmStatic
     @Singleton
@@ -68,13 +69,13 @@ object DatabaseModule {
             migrations = listOf(
                 SharedPreferencesMigration(
                     context.applicationContext,
-                    GOAL_PREFERENCES_NAME
+                    USER_PROFILE_PREFERENCES_NAME
                 )
             ),
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
             produceFile = {
                 context.applicationContext.preferencesDataStoreFile(
-                    GOAL_PREFERENCES_NAME
+                    USER_PROFILE_PREFERENCES_NAME
                 )
             }
         )

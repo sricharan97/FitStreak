@@ -1,12 +1,17 @@
 package com.apptimistiq.android.fitstreak.main.data
 
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalPreferences
+import com.apptimistiq.android.fitstreak.main.data.domain.UserInfoPreferences
+import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
 import kotlinx.coroutines.flow.Flow
 
-interface GoalDataSource {
+interface UserProfileDataSource {
 
     val goalPreferences: Flow<GoalPreferences>
 
     val userInfoPreferences: Flow<UserInfoPreferences>
+
+    val userStateInfo: Flow<UserStateInfo>
 
     val stepsGoal: Flow<Int>
 
@@ -37,4 +42,5 @@ interface GoalDataSource {
 
     suspend fun updateDietSelection(dietType: String)
 
+    suspend fun updateUserStateInfo(userStateInfo: UserStateInfo)
 }

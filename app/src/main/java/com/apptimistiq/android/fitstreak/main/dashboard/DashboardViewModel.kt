@@ -3,8 +3,8 @@ package com.apptimistiq.android.fitstreak.main.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
-import com.apptimistiq.android.fitstreak.main.data.GoalPreferences
-import com.apptimistiq.android.fitstreak.main.data.UserInfoPreferences
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalPreferences
+import com.apptimistiq.android.fitstreak.main.data.domain.UserInfoPreferences
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
