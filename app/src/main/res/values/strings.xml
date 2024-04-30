@@ -11,6 +11,8 @@
     <string name="sign_in_text">Continue with email</string>
     <string name="below_sign_in_text">OR</string>
     <string name="sign_in_image_desc">A picture of aspiring fit family</string>
+    <string name="home_placeholder_desc">A picture of a muscle man sprinting with background of vibrant
+        and colorful rays projecting out making a circle</string>
     <string name="welcome_fragment_label">Welcome</string>
     <string name="goal_selection_label">Goals</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>

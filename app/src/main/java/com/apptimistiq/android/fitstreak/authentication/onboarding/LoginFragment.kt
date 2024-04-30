@@ -31,6 +31,8 @@ import javax.inject.Inject
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
+    private var completedOnboarding: Boolean = false
+
 
     // @Inject annotated fields will be provided by Dagger
     @Inject
@@ -39,7 +41,7 @@ class LoginFragment : Fragment() {
     private val viewModel by activityViewModels<AuthenticationViewModel> { viewModelFactory }
 
     companion object {
-        const val TAG = "Login Fragment"
+        const val TAG = "LoginFragment"
     }
 
     private val signInLauncher =
@@ -75,22 +77,31 @@ class LoginFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                viewModel.signInFlowStatus.collect {
-                    if (it) {
-                        if (viewModel.userState.value.isOnboarded) {
-                            navigateHomeAfterSuccessfulLogin()
-                            requireActivity().finish()
-                        } else {
-                            navigateOnboardingFlow()
-                        }
-
-                        viewModel.signInFlowReset()
+                viewModel.userState.collect {
+                    if (it.isOnboarded) {
+                        completedOnboarding = true
                     }
                 }
-
             }
         }
+
+        /* viewLifecycleOwner.lifecycleScope.launch {
+             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+
+                 viewModel.signInFlowStatus.collect {
+                     if (it) {
+                         if (completedOnboarding) {
+                             navigateHomeAfterSuccessfulLogin()
+                         } else {
+                             navigateOnboardingFlow()
+                         }
+
+                         viewModel.signInFlowReset()
+                     }
+                 }
+
+             }
+         }*/
 
     }
 
@@ -134,7 +145,13 @@ class LoginFragment : Fragment() {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
 
-            viewModel.signInFlowCompleted()
+            if (completedOnboarding) {
+                Log.d(TAG, "Inside the SignInResult success block")
+                navigateHomeAfterSuccessfulLogin()
+            } else {
+                navigateOnboardingFlow()
+            }
+
 
         } else {
             //TODO: Sign in failed, If response is null the user canceled the
@@ -153,7 +170,9 @@ class LoginFragment : Fragment() {
     private fun navigateHomeAfterSuccessfulLogin() {
 
         findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToMainActivity())
-
+        Log.d(TAG, "Navigation to home fragment in trigger  is  called")
+        requireActivity().finish()
+        Log.d(TAG, "Activity finish called")
     }
 
     //Navigate to On boarding flow for new users

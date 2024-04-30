@@ -6,18 +6,23 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(), PermissionRationaleDialog.PermissionDialogListener {
@@ -25,68 +30,76 @@ class MainActivity : AppCompatActivity(), PermissionRationaleDialog.PermissionDi
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var activityMainBinding: ActivityMainBinding
     private lateinit var permissionDialog: PermissionRationaleDialog
-
+    private lateinit var host: NavHostFragment
+    private lateinit var navController: NavController
+    private lateinit var toolbar: Toolbar
+    private lateinit var bottomNav: BottomNavigationView
 
     //ActivityResult launcher to handle the permission request flow
-    val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-
-            if (isGranted) {
-
-                // TODO:Permission is granted. Continue the action or workflow in your app
-
-            } else {
-                // TODO:Explain to the user that the feature is unavailable because the
-                // features requires a permission that the user has denied
-                Snackbar.make(
-                    activityMainBinding.root, getString(R.string.activity_permission_denied),
-                    Snackbar.LENGTH_INDEFINITE
-                )
-                    .setAction(R.string.ok) {
-                        //TODO: Degrade the app feature
-                    }
-                    .setAnchorView(activityMainBinding.bottomNavView)
-                    .show()
-
-            }
-
-        }
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        setContentView(activityMainBinding.root)
+        requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
 
+                if (isGranted) {
 
-        val host =
-            supportFragmentManager.findFragmentById(R.id.myNavHostFragment) as NavHostFragment
+                    attachAndSetupHostFragment()
 
-        val navController = host.navController
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // features requires a permission that the user has denied
+                    Snackbar.make(
+                        activityMainBinding.root, getString(R.string.activity_permission_denied),
+                        Snackbar.LENGTH_INDEFINITE
+                    )
+                        .setAction(R.string.ok) {
+                            //TODO: Degrade the app feature
+                        }
+                        .setAnchorView(activityMainBinding.bottomNavView)
+                        .show()
 
-        appBarConfiguration =
-            AppBarConfiguration(setOf(R.id.home_dest, R.id.recipe_dest, R.id.dashboard_dest))
+                }
 
-        val toolbar = activityMainBinding.toolbar
-        setSupportActionBar(toolbar)
-
-        toolbar.setupWithNavController(navController, appBarConfiguration)
-
-        val bottomNav = activityMainBinding.bottomNavView
-
-        bottomNav.setupWithNavController(navController)
-
+            }
 
         //Check if the permissions have been granted for activity tracking in the app
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkActivityPermission()
         }
 
+
         //TODO: When the MainActivity launches, check if the user is a registered user and navigate him
         //accordingly to the login and Onboarding screens.
+
+    }
+
+    private fun attachAndSetupHostFragment() {
+        //Hide the placeholder image once the permissions are granted.
+        activityMainBinding.homePlaceholderImageView.visibility = View.GONE
+        host =
+            supportFragmentManager.findFragmentById(R.id.myNavHostFragment) as NavHostFragment
+
+        navController = host.navController
+
+        navController.setGraph(R.navigation.nav_graph)
+
+        appBarConfiguration =
+            AppBarConfiguration(setOf(R.id.home_dest, R.id.recipe_dest, R.id.dashboard_dest))
+
+        toolbar = activityMainBinding.toolbar
+        setSupportActionBar(toolbar)
+
+        toolbar.setupWithNavController(navController, appBarConfiguration)
+
+        bottomNav = activityMainBinding.bottomNavView
+
+        bottomNav.setupWithNavController(navController)
 
     }
 
@@ -101,7 +114,7 @@ class MainActivity : AppCompatActivity(), PermissionRationaleDialog.PermissionDi
 
                     == PackageManager.PERMISSION_GRANTED -> {
 
-                //TODO:Permissions are granted.Continue with normal app flow
+                attachAndSetupHostFragment()
 
             }
 
