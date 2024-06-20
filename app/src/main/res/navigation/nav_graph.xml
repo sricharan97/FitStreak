@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/home_dest">
+    app:startDestination="@id/homeTransitionFragment">
 
     <fragment
-        android:id="@+id/home_dest"
+        android:id="@+id/daily_progress_fragment"
         android:name="com.apptimistiq.android.fitstreak.main.progressTrack.DailyProgressFragment"
         android:label="@string/home_dest_label"
         tools:layout="@layout/fragment_daily_progress">
@@ -19,18 +19,20 @@
             android:id="@+id/action_home_dest_to_editActivityFragment"
             app:destination="@id/editActivityFragment"
             app:launchSingleTop="true"
-            app:popUpTo="@id/home_dest"
+            app:popUpTo="@id/daily_progress_fragment"
             app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/recipe_dest"
         android:name="com.apptimistiq.android.fitstreak.main.recipe.RecipesFragment"
         android:label="@string/recipe_dest_label"
+        app:launchSingleTop="true"
         tools:layout="@layout/fragment_recipes" />
     <fragment
         android:id="@+id/dashboard_dest"
         android:name="com.apptimistiq.android.fitstreak.main.dashboard.DashboardFragment"
         android:label="@string/dashboard_dest_label"
+        app:launchSingleTop="true"
         tools:layout="@layout/fragment_dashboard">
         <action
             android:id="@+id/action_dashboard_dest_to_authenticationActivity"
@@ -72,9 +74,20 @@
             app:argType="com.apptimistiq.android.fitstreak.main.data.domain.ActivityType" />
         <action
             android:id="@+id/action_editActivityFragment_to_home_dest"
-            app:destination="@id/home_dest"
+            app:destination="@id/daily_progress_fragment"
             app:launchSingleTop="true"
             app:popUpTo="@id/editActivityFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/homeTransitionFragment"
+        android:name="com.apptimistiq.android.fitstreak.main.home.HomeTransitionFragment"
+        android:label="HomeTransitionFragment">
+        <action
+            android:id="@+id/action_homeTransitionFragment_to_daily_progress_fragment"
+            app:destination="@id/daily_progress_fragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/homeTransitionFragment"
             app:popUpToInclusive="true" />
     </fragment>
 

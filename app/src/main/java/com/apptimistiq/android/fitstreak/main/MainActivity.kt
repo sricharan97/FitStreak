@@ -1,98 +1,61 @@
 package com.apptimistiq.android.fitstreak.main
 
-import android.Manifest
-import android.app.Dialog
-import android.content.Context
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.view.View
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.navOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainActivity : AppCompatActivity(), PermissionRationaleDialog.PermissionDialogListener {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var activityMainBinding: ActivityMainBinding
-    private lateinit var permissionDialog: PermissionRationaleDialog
-    private lateinit var host: NavHostFragment
-    private lateinit var navController: NavController
-    private lateinit var toolbar: Toolbar
     private lateinit var bottomNav: BottomNavigationView
+    private lateinit var navController: NavController
 
-    //ActivityResult launcher to handle the permission request flow
-    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+    // @Inject annotated fields will be provided by Dagger
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
+    private val viewModel by viewModels<MainViewModel> { viewModelFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        (application as FitApp).appComponent.mainActivityComponent().create().inject(this)
 
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        requestPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-
-                if (isGranted) {
-
-                    attachAndSetupHostFragment()
-
-                } else {
-                    // Explain to the user that the feature is unavailable because the
-                    // features requires a permission that the user has denied
-                    Snackbar.make(
-                        activityMainBinding.root, getString(R.string.activity_permission_denied),
-                        Snackbar.LENGTH_INDEFINITE
-                    )
-                        .setAction(R.string.ok) {
-                            //TODO: Degrade the app feature
-                        }
-                        .setAnchorView(activityMainBinding.bottomNavView)
-                        .show()
-
-                }
-
-            }
-
-        //Check if the permissions have been granted for activity tracking in the app
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            checkActivityPermission()
-        }
-
-
-        //TODO: When the MainActivity launches, check if the user is a registered user and navigate him
-        //accordingly to the login and Onboarding screens.
-
-    }
-
-    private fun attachAndSetupHostFragment() {
-        //Hide the placeholder image once the permissions are granted.
-        activityMainBinding.homePlaceholderImageView.visibility = View.GONE
-        host =
+        val host =
             supportFragmentManager.findFragmentById(R.id.myNavHostFragment) as NavHostFragment
 
         navController = host.navController
 
-        navController.setGraph(R.navigation.nav_graph)
-
         appBarConfiguration =
-            AppBarConfiguration(setOf(R.id.home_dest, R.id.recipe_dest, R.id.dashboard_dest))
+            AppBarConfiguration(
+                setOf(
+                    R.id.daily_progress_fragment,
+                    R.id.recipe_dest,
+                    R.id.dashboard_dest
+                )
+            )
 
-        toolbar = activityMainBinding.toolbar
+        val toolbar = activityMainBinding.toolbar
         setSupportActionBar(toolbar)
 
         toolbar.setupWithNavController(navController, appBarConfiguration)
@@ -101,102 +64,157 @@ class MainActivity : AppCompatActivity(), PermissionRationaleDialog.PermissionDi
 
         bottomNav.setupWithNavController(navController)
 
+        //observe for the permission denied event and show the snackbar to the user
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.activityPermissionDenied.collect { permissionDenied ->
+                    if (permissionDenied) {
+                        Snackbar.make(
+                            activityMainBinding.root,
+                            getString(R.string.activity_permission_denied),
+                            Snackbar.LENGTH_INDEFINITE
+                        )
+                            .setAction(R.string.ok) {
+                                //TODO: Degrade the app feature
+                                viewModel.degradeHomeDestinationMenu()
+                            }
+                            .setAnchorView(bottomNav)
+                            .show()
+                    }
+                    viewModel.resetActivityPermissionDenied()
+                }
+            }
+        }
+
+        //check if the app experience needs to be degraded based on acitivty permission denial
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.degradeHomeFunctionality.collect { degradeHomeFunctionality ->
+                    if (degradeHomeFunctionality) {
+                        degradeHomeDestinationMenu()
+
+                    }
+                    viewModel.resetHomeDestinationMap()
+                }
+            }
+        }
+
+        //check if the app experience needs to be upgraded based on acitivty permission approval
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.upgradeHomeFunctionality.collect { upgradeHomeFunctionality ->
+                    if (upgradeHomeFunctionality) {
+                        upgradeHomeDestinationMenu()
+                    }
+                    viewModel.resetUpgradedHomeDestinationMap()
+
+                }
+            }
+        }
+
+
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun checkActivityPermission() {
-        when {
+    private fun degradeHomeDestinationMenu() {
+        bottomNav.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.daily_progress_fragment -> {
+                    navController.navigate(R.id.homeTransitionFragment,
+                        null,
+                        navOptions {
+                            launchSingleTop = true
+                            popUpTo(R.id.homeTransitionFragment) {
+                                inclusive = false
+                            }
+                        })
+                    true
+                }
+                R.id.recipe_dest -> {
+                    navController.navigate(R.id.recipe_dest,
+                        null,
+                        navOptions {
+                            launchSingleTop = true
+                            popUpTo(R.id.recipe_dest) {
+                                inclusive = false
+                            }
+                        }
+                    )
 
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACTIVITY_RECOGNITION
-            )
+                    true
+                }
+                R.id.dashboard_dest -> {
+                    navController.navigate(R.id.dashboard_dest,
+                        null,
+                        navOptions {
+                            launchSingleTop = true
+                            popUpTo(R.id.dashboard_dest) {
+                                inclusive = false
+                            }
+                        }
+                    )
 
-                    == PackageManager.PERMISSION_GRANTED -> {
-
-                attachAndSetupHostFragment()
-
+                    true
+                }
+                else -> false
             }
 
-            shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION) -> {
-
-                permissionDialog = PermissionRationaleDialog()
-                permissionDialog.show(supportFragmentManager, PermissionRationaleDialog.TAG)
-            }
-
-            else -> {
-                // You can directly ask for the permission.
-                // The registered ActivityResultCallback gets the result of this request.
-                requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-
-            }
         }
     }
 
-    override fun onDialogPositiveClick(dialog: DialogFragment) {
-        requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-        permissionDialog.dismiss()
-    }
+    private fun upgradeHomeDestinationMenu() {
+        bottomNav.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.daily_progress_fragment -> {
+                    navController.navigate(R.id.daily_progress_fragment,
+                        null,
+                        navOptions {
+                            launchSingleTop = true
+                            popUpTo(R.id.daily_progress_fragment) {
+                                inclusive = false
+                            }
+                        }
+                    )
 
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-        //TODO: continue using your app with degraded functionality
-        permissionDialog.dismiss()
-    }
-
-
-}
-
-class PermissionRationaleDialog : DialogFragment() {
-
-    companion object {
-        const val TAG = "PermissionRationaleDialog"
-    }
-
-    // Use this instance of the interface to deliver action events
-    private lateinit var listener: PermissionDialogListener
-
-    /* The activity that creates an instance of this dialog fragment must
- * implement this interface in order to receive event callbacks.
- * Each method passes the DialogFragment in case the host needs to query it. */
-    interface PermissionDialogListener {
-        fun onDialogPositiveClick(dialog: DialogFragment)
-        fun onDialogNegativeClick(dialog: DialogFragment)
-    }
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return activity?.let {
-            // Use the Builder class for convenient dialog construction
-            val builder = AlertDialog.Builder(it)
-            builder.setMessage(R.string.permission_rationale_dialog)
-                .setPositiveButton(R.string.permission_dialog_accept)
-                { dialog, id ->
-                    listener.onDialogPositiveClick(this)
+                    true
                 }
-                .setNegativeButton(R.string.permission_dialog_reject) { dialog, id ->
-                    listener.onDialogNegativeClick(this)
+                R.id.recipe_dest -> {
+                    navController.navigate(R.id.recipe_dest,
+                        null,
+                        navOptions {
+                            launchSingleTop = true
+                            popUpTo(R.id.recipe_dest) {
+                                inclusive = false
+                            }
+                        })
+
+                    true
                 }
+                R.id.dashboard_dest -> {
+                    navController.navigate(R.id.dashboard_dest,
+                        null,
+                        navOptions {
+                            launchSingleTop = true
+                            popUpTo(R.id.dashboard_dest) {
+                                inclusive = false
+                            }
+                        })
+                    true
+                }
+                else -> false
+            }
 
-
-            builder.create()
-        } ?: throw IllegalStateException("Activity cannot be null")
-    }
-
-    // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        // Verify that the host activity implements the callback interface
-
-        try {
-            // Instantiate the NoticeDialogListener so we can send events to the host
-            listener = context as PermissionDialogListener
-
-        } catch (e: ClassCastException) {
-            // The activity doesn't implement the interface, throw exception
-            throw ClassCastException(
-                (context.toString() +
-                        " must implement NoticeDialogListener")
-            )
         }
-
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+

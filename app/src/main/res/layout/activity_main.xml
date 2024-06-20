@@ -34,14 +34,9 @@
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/daily_progress_fragment_top_margin"
             app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph"
             app:layout_dodgeInsetEdges="bottom" />
 
-        <ImageView
-            android:id="@+id/home_placeholder_image_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/home_placeholder_desc"
-            android:src="@drawable/ic_home_dest_placeholder" />
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_nav_view"
