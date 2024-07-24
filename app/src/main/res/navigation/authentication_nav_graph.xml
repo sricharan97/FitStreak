@@ -46,7 +46,7 @@
         <action
             android:id="@+id/action_goalSelectionFragment_to_mainActivity"
             app:destination="@id/mainActivity"
-            app:launchSingleTop="false"
+            app:launchSingleTop="true"
             app:popUpTo="@id/goalSelectionFragment"
             app:popUpToInclusive="true" />
     </fragment>
