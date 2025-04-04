@@ -4,7 +4,7 @@ buildscript {
     ext {
 
         nav_version = "2.4.2"
-        constraint_layout_version = "2.1.3"
+        constraint_layout_version = "2.1.0"
         google_services_version = "4.3.10"
         firebase_ui_auth_version = "8.0.0"
         google_services_auth_version = "20.2.0"
@@ -19,7 +19,8 @@ buildscript {
 
     repositories {
         google()
-        mavenCentral()
+
+                                                    mavenCentral()
     }
 
     dependencies {

@@ -61,9 +61,15 @@ fun bindActivityIcon(imageView: ImageView, activityType: ActivityType) {
 
 fun bindGoalProgress(progressBar: ProgressBar, activityItemUiState: ActivityItemUiState) {
 
+    /* val motionLayout = progressBar.rootView.findViewById(R.id.goal_selection_item_layout) as MotionLayout*/
     val progressNum =
         activityItemUiState.currentReading.toDouble().div(activityItemUiState.goalReading)
-    progressBar.progress = (progressNum * 100).toInt()
+    val progressPercent = (progressNum * 100).toInt()
+    progressBar.progress = progressPercent
+
+    /*if(progressPercent >= 100) {
+        motionLayout.transitionToEnd()
+    }*/
 
 }
 

@@ -2,9 +2,11 @@ package com.apptimistiq.android.fitstreak.main.progressTrack
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.RecyclerItemLayoutBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityItemUiState
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
@@ -19,6 +21,17 @@ class ActivityListAdapter(val clickListener: ActivityItemListener) :
             binding.activityItem = item
             binding.clickListener = clickListener
             binding.executePendingBindings()
+            val progressNum =
+                item.currentReading.toDouble().div(item.goalReading)
+            val progressPercent = (progressNum * 100).toInt()
+            val motionLayout =
+                binding.root.findViewById(R.id.goal_selection_item_layout) as MotionLayout
+            if (progressPercent >= 100) {
+                motionLayout.transitionToEnd()
+            } else {
+                motionLayout.transitionToStart()
+            }
+
         }
 
         companion object {
