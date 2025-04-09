@@ -14,7 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
-import com.apptimistiq.android.fitstreak.authentication.GoalType
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
 import javax.inject.Inject

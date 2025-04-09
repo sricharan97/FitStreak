@@ -35,7 +35,8 @@
             android:layout_marginTop="@dimen/daily_progress_fragment_top_margin"
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"
-            app:layout_dodgeInsetEdges="bottom" />
+            app:layout_dodgeInsetEdges="bottom"
+            tools:layout="@layout/fragment_home_transition" />
 
 
         <com.google.android.material.bottomnavigation.BottomNavigationView

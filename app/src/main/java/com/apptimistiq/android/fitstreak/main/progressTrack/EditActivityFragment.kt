@@ -23,7 +23,6 @@ import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentAddWorkoutBinding
 import com.apptimistiq.android.fitstreak.databinding.FragmentEditActivityBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.ActivityType
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

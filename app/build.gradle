@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'androidx.navigation.safeargs'
     id 'com.google.gms.google-services'
+    id 'com.google.devtools.ksp'
     id 'kotlin-kapt'
 }
 
@@ -11,18 +12,20 @@ def apikeyProperties = new Properties()
 apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
 
 android {
-    compileSdk 31
+    namespace "com.apptimistiq.android.fitstreak"
+    compileSdk 33
 
     buildFeatures {
 
         dataBinding =  true
+        buildConfig = true // Enable custom BuildConfig fields
 
     }
 
     defaultConfig {
         applicationId "com.apptimistiq.android.fitstreak"
         minSdk 26
-        targetSdk 31
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -86,7 +89,7 @@ dependencies {
 
     //Room dependencies
     implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    ksp "androidx.room:room-compiler:$room_version"
 
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:$room_version"
@@ -113,7 +116,7 @@ dependencies {
 
     //dependencies for Dagger implementation
     implementation "com.google.dagger:dagger:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    ksp "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Retrofit
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
@@ -132,3 +135,22 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.14.2'
 
 }
+
+kapt {
+    correctErrorTypes = true
+    useBuildCache = true
+    javacOptions {
+        // You already have these - make sure they're in your kapt block
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED")
+        // Add these additional exports
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED")
+    }
+}
+

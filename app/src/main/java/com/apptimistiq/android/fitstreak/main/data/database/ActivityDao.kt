@@ -21,7 +21,7 @@ interface ActivityDao {
     /**
      * Get the activity details for today
      */
-    @Query("SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') = date('now','localtime') ")
+    @Query("SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') = date('now','localtime') LIMIT 1 ")
     fun getTodayActivity(): Flow<Activity>
 
     /**
@@ -42,7 +42,25 @@ interface ActivityDao {
     /**
      * Update the activity details for the day
      */
-    @Update
-    suspend fun updateActivity(activity: Activity)
+    @Query("UPDATE activity_store SET water_glasses = :waterGlasses, sleep_hrs = :sleepHours, " +
+            "exercise_cal = :exerciseCalories, steps = :steps " +
+            "WHERE date(date_of_activity,'unixepoch','localtime') = date(:date,'unixepoch','localtime')")
+    suspend fun updateActivityByDate(
+        waterGlasses: Int,
+        sleepHours: Int,
+        exerciseCalories: Int,
+        steps: Int,
+        date: Long
+    )
+
+    /**
+     * Checks if an activity entry exists for the specified date.
+     * Returns true if an activity record is found for the given date, false otherwise.
+     *
+     * @param date The timestamp (in milliseconds) of the date to check
+     * @return Boolean indicating whether an activity exists for that date
+     */
+    @Query("SELECT EXISTS(SELECT 1 FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') = date(:date,'unixepoch','localtime'))")
+    suspend fun activityExistsForDate(date: Long): Boolean
 
 }

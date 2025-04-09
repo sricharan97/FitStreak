@@ -3,17 +3,11 @@ package com.apptimistiq.android.fitstreak.authentication
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-enum class GoalType {
-    STEP,
-    WATER,
-    EXERCISE,
-    SLEEP
-}
 
 // @Inject tells Dagger how to provide instances of this type
 class AuthenticationViewModel @Inject constructor(

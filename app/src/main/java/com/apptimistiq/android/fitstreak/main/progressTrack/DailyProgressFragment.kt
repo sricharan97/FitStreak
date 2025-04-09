@@ -30,7 +30,6 @@ import com.google.android.gms.fitness.data.DataType.*
 import com.google.android.gms.fitness.request.SessionInsertRequest
 import com.google.android.gms.fitness.request.SessionReadRequest
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat

@@ -1,12 +1,13 @@
 package com.apptimistiq.android.fitstreak.main.data
 
-import com.apptimistiq.android.fitstreak.authentication.GoalType
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.main.dashboard.GoalUserInfo
 import com.apptimistiq.android.fitstreak.main.data.database.Activity
 import com.apptimistiq.android.fitstreak.main.data.database.ActivityDao
-import com.apptimistiq.android.fitstreak.main.data.database.asActivityTypeVal
-import com.apptimistiq.android.fitstreak.main.data.database.asDomainModel
+import com.apptimistiq.android.fitstreak.main.data.mappers.asActivityTypeVal
+import com.apptimistiq.android.fitstreak.main.data.mappers.asDomainModel
 import com.apptimistiq.android.fitstreak.main.data.domain.*
+import com.apptimistiq.android.fitstreak.main.data.mappers.asDatabaseModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -94,8 +95,23 @@ class ActivityLocalRepository @Inject constructor(
         }
 
     override suspend fun updateActivity(activityItems: List<ActivityItemUiState>, date: Long) =
+
         withContext(ioDispatcher) {
-            activityDao.updateActivity(activityItems.asDatabaseModel(date))
+            // Check if an activity exists for this date
+            val exists = activityDao.activityExistsForDate(date)
+            if(exists) {
+                // Extract values from activity items
+                val waterGlasses = activityItems.find { it.dataType == ActivityType.WATER }?.currentReading ?: 0
+                val sleepHours = activityItems.find { it.dataType == ActivityType.SLEEP }?.currentReading ?: 0
+                val exerciseCalories = activityItems.find { it.dataType == ActivityType.EXERCISE }?.currentReading ?: 0
+                val steps = activityItems.find { it.dataType == ActivityType.STEP }?.currentReading ?: 0
+
+                // Update using the new method name
+                activityDao.updateActivityByDate(waterGlasses, sleepHours, exerciseCalories, steps, date)
+            }
+            else{
+                // If the activity doesn't exist, save it as a new entry
+                saveActivity(activityItems, date)            }
         }
 
     override suspend fun saveGoal(goalType: GoalType, value: Int) {

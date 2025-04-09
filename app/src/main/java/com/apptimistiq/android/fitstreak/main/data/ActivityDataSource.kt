@@ -1,6 +1,6 @@
 package com.apptimistiq.android.fitstreak.main.data
 
-import com.apptimistiq.android.fitstreak.authentication.GoalType
+import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.main.dashboard.GoalUserInfo
 import com.apptimistiq.android.fitstreak.main.data.database.Activity
 import com.apptimistiq.android.fitstreak.main.data.domain.*
