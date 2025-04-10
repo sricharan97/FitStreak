@@ -57,7 +57,7 @@
 
         <argument
             android:name="goal_info_type"
-            app:argType="com.apptimistiq.android.fitstreak.main.dashboard.GoalUserInfo" />
+            app:argType="com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo" />
         <action
             android:id="@+id/action_goalEditFragment_to_dashboard_dest"
             app:destination="@id/dashboard_dest"

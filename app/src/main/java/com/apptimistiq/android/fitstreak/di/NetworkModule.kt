@@ -10,30 +10,24 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import javax.inject.Singleton
 
-//Base URL to interact with the Spoonacular Web service
-private const val BASE_URL = "https://api.spoonacular.com//"
+/**
+ * Base URL for the Spoonacular API
+ * Used to configure the Retrofit instance for network requests
+ */
+private const val BASE_URL = "https://api.spoonacular.com/"
 
+/**
+ * Dagger module that provides network-related dependencies for the application.
+ * This includes Retrofit service instances and JSON parsing configurations.
+ */
 @Module
 object NetworkModule {
 
-    // @Provides tell Dagger how to create instances of the type that this function
-    // returns (i.e. SpoonacularApiService).
-    // Function parameters are the dependencies of this type
-    @JvmStatic
-    @Singleton
-    @Provides
-    fun provideSpoonacularRetrofitService(moshi: Moshi): SpoonacularApiService {
-
-        return Retrofit.Builder()
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl(BASE_URL)
-            .build()
-            .create(SpoonacularApiService::class.java)
-
-
-    }
-
+    /**
+     * Provides the Moshi instance used for JSON parsing.
+     * 
+     * @return A configured [Moshi] instance with Kotlin adapter support
+     */
     @JvmStatic
     @Singleton
     @Provides
@@ -41,5 +35,23 @@ object NetworkModule {
         return Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
+    }
+
+    /**
+     * Provides a configured Retrofit service implementation for Spoonacular API.
+     * 
+     * @param moshi The Moshi instance for JSON serialization/deserialization
+     * @return An implementation of [SpoonacularApiService] interface
+     */
+    @JvmStatic
+    @Singleton
+    @Provides
+    fun provideSpoonacularRetrofitService(moshi: Moshi): SpoonacularApiService {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(SpoonacularApiService::class.java)
     }
 }

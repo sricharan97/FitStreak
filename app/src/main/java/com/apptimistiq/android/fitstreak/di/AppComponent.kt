@@ -18,7 +18,16 @@ import dagger.Component
 import dagger.Module
 import javax.inject.Singleton
 
-//Definition of a Dagger component
+/**
+ * Root Dagger component for the application.
+ *
+ * The AppComponent provides application-wide singletons and serves as the parent
+ * component for all feature-specific subcomponents. It's responsible for providing
+ * dependencies that need to be shared across the entire application.
+ *
+ * This component lives throughout the application lifecycle and is initialized
+ * during application startup.
+ */
 @Singleton
 @Component(
     modules = [
@@ -31,33 +40,105 @@ import javax.inject.Singleton
 )
 interface AppComponent {
 
-    // Factory to create instances of the AppComponent
+    /**
+     * Factory interface for creating instances of the AppComponent.
+     * 
+     * Using this factory pattern allows for proper injection of dependencies
+     * during the component's construction.
+     */
     @Component.Factory
     interface Factory {
-        // With @BindsInstance, the Context passed in will be available in the graph
+        /**
+         * Creates a new instance of AppComponent.
+         *
+         * @param applicationContext The application context to be available in the dependency graph
+         * @return An instance of AppComponent
+         */
         fun create(@BindsInstance applicationContext: Context): AppComponent
     }
-
+    
+    // Factory methods for feature-specific subcomponents
+    
+    /**
+     * Returns a factory for creating DailyProgressComponent instances.
+     */
     fun dailyProgressComponent(): DailyProgressComponent.Factory
+    
+    /**
+     * Returns a factory for creating AuthenticationComponent instances.
+     */
     fun authenticationComponent(): AuthenticationComponent.Factory
+    
+    /**
+     * Returns a factory for creating RecipesTrackComponent instances.
+     */
     fun recipesTrackComponent(): RecipesTrackComponent.Factory
+    
+    /**
+     * Returns a factory for creating DashboardComponent instances.
+     */
     fun DashboardComponent(): DashboardComponent.Factory
+    
+    /**
+     * Returns a factory for creating GoalEditComponent instances.
+     */
     fun GoalEditComponent(): GoalEditComponent.Factory
+    
+    /**
+     * Returns a factory for creating EditActivityComponent instances.
+     */
     fun EditActivityComponent(): EditActivityComponent.Factory
+    
+    /**
+     * Returns a factory for creating LoginComponent instances.
+     */
     fun loginComponent(): LoginComponent.Factory
+    
+    /**
+     * Returns a factory for creating HomeTransitionComponent instances.
+     */
     fun homeTransitionComponent(): HomeTransitionComponent.Factory
+    
+    /**
+     * Returns a factory for creating MainActivityComponent instances.
+     */
     fun mainActivityComponent(): MainActivityComponent.Factory
 
+    // Application-wide data sources provided by this component
+    
+    /**
+     * Provides access to activity-related data operations.
+     */
     val activityDataSource: ActivityDataSource
+    
+    /**
+     * Provides access to user profile data operations.
+     */
     val userProfileDataSource: UserProfileDataSource
+    
+    /**
+     * Provides access to recipe data operations from remote sources.
+     */
     val recipeRemoteDataSource: RecipeRemoteDataSource
-
 }
 
+/**
+ * Module that declares all subcomponents available in the application.
+ *
+ * This module ensures that all feature-specific subcomponents are registered with
+ * the Dagger graph and can be properly instantiated through the AppComponent.
+ */
 @Module(
-    subcomponents = [DailyProgressComponent::class, AuthenticationComponent::class,
-        RecipesTrackComponent::class, DashboardComponent::class, GoalEditComponent::class,
-        EditActivityComponent::class, LoginComponent::class, HomeTransitionComponent::class,
-        MainActivityComponent::class]
+    subcomponents = [
+        DailyProgressComponent::class,
+        AuthenticationComponent::class,
+        RecipesTrackComponent::class, 
+        DashboardComponent::class, 
+        GoalEditComponent::class,
+        EditActivityComponent::class, 
+        LoginComponent::class, 
+        HomeTransitionComponent::class,
+        MainActivityComponent::class
+    ]
 )
 object SubComponentsModule

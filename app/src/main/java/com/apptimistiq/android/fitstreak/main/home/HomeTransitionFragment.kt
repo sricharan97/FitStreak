@@ -32,56 +32,85 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * HomeTransitionFragment serves as an intermediate screen handling activity permission checks
+ * before navigating to the main daily progress screen.
+ *
+ * This fragment is responsible for:
+ * 1. Checking and requesting necessary activity recognition permissions
+ * 2. Showing permission rationale when needed
+ * 3. Transitioning to the Daily Progress screen when permission handling is complete
+ */
 class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionDialogListener {
 
+    // --- Properties ---
+    
     private lateinit var binding: FragmentHomeTransitionBinding
     private lateinit var permissionDialog: PermissionRationaleDialog
 
-    // @Inject annotated fields will be provided by Dagger
+    /** ViewModel factory provided by Dagger */
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
+    /** Shared ViewModel instance */
     private val viewModel by activityViewModels<MainViewModel> { viewModelFactory }
 
+    /** Access to the BottomNavigationView from the hosting activity */
     private val bottomNavigationView =
         (activity as? MainActivity)?.findViewById<BottomNavigationView>(R.id.bottom_nav_view)
 
+    // --- Permission Handling ---
+    
+    /**
+     * Permission request launcher that handles the result of the permission request.
+     * The callback determines what happens after the user makes a decision about the permission.
+     */
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-
             if (isGranted) {
-
-                //TODO("Continue with the normal app flow")
+                // Permission granted, proceed with normal app flow
                 viewModel.readyToNavigateToDailyProgress()
-
-
             } else {
+                // Permission denied, update the ViewModel
                 viewModel.activityPermissionDenied()
-
             }
-
         }
 
+    // --- Lifecycle Methods ---
+
+    /**
+     * Performs dependency injection when fragment attaches to context
+     */
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (requireActivity().application as FitApp).appComponent.homeTransitionComponent()
             .create().inject(this)
     }
 
-
+    /**
+     * Inflates the fragment layout and sets up data binding
+     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_home_transition, container, false)
+    ): View {
+        binding = DataBindingUtil.inflate(
+            inflater, 
+            R.layout.fragment_home_transition, 
+            container, 
+            false
+        )
         return binding.root
     }
 
+    /**
+     * Sets up the UI state collection and observers after the view is created
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Observe navigation state changes
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.navigateToDailyProgress.collect { navigate ->
@@ -94,6 +123,7 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
             }
         }
 
+        // Observe permission check requests
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.activityPermissionStatusCheck.collect { check ->
@@ -104,110 +134,115 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
                 }
             }
         }
-
     }
 
+    // --- Permission Dialog Callbacks ---
+    
+    /**
+     * Handles positive click on permission rationale dialog
+     * Launches the system permission request
+     */
     override fun onDialogPositiveClick(dialog: DialogFragment) {
         requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
         permissionDialog.dismiss()
     }
 
+    /**
+     * Handles negative click on permission rationale dialog
+     * Continues with limited app functionality
+     */
     override fun onDialogNegativeClick(dialog: DialogFragment) {
-        //TODO: continue using your app with degraded functionality
+        // Continue with limited functionality when permission is denied
         permissionDialog.dismiss()
     }
 
+    // --- Helper Methods ---
+    
+    /**
+     * Checks the current state of activity recognition permission and takes appropriate action:
+     * - If already granted, proceed with navigation
+     * - If rationale should be shown, display permission dialog
+     * - Otherwise, directly request the permission
+     */
     @RequiresApi(Build.VERSION_CODES.M)
     private fun checkActivityPermission() {
         when {
-
+            // Permission is already granted
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACTIVITY_RECOGNITION
-            )
-
-                    == PackageManager.PERMISSION_GRANTED -> {
-
+            ) == PackageManager.PERMISSION_GRANTED -> {
                 viewModel.readyToNavigateToDailyProgress()
             }
-
+            
+            // Show rationale if needed before requesting permission
             shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION) -> {
-
                 permissionDialog = PermissionRationaleDialog()
                 permissionDialog.setListener(this)
                 permissionDialog.show(childFragmentManager, PermissionRationaleDialog.TAG)
             }
-
+            
+            // Directly request permission
             else -> {
-                // You can directly ask for the permission.
-                // The registered ActivityResultCallback gets the result of this request.
                 requestPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-
             }
         }
     }
 
+    /**
+     * Navigates to the Daily Progress fragment
+     */
     private fun navigateToDailyProgressFragment() {
         findNavController().navigate(R.id.action_homeTransitionFragment_to_daily_progress_fragment)
     }
 }
 
-
+/**
+ * Dialog fragment that explains to users why the activity recognition permission is needed
+ * and allows them to accept or reject the permission request.
+ */
 class PermissionRationaleDialog : DialogFragment() {
 
     companion object {
+        /** Tag used for fragment manager transactions */
         const val TAG = "PermissionRationaleDialog"
     }
 
-    // Use this instance of the interface to deliver action events
+    /** Listener for dialog button clicks */
     private lateinit var listener: PermissionDialogListener
 
-    /* The activity that creates an instance of this dialog fragment must
- * implement this interface in order to receive event callbacks.
- * Each method passes the DialogFragment in case the host needs to query it. */
+    /**
+     * Interface to communicate dialog events back to the host fragment
+     */
     interface PermissionDialogListener {
+        /** Called when user clicks the positive/accept button */
         fun onDialogPositiveClick(dialog: DialogFragment)
+        
+        /** Called when user clicks the negative/reject button */
         fun onDialogNegativeClick(dialog: DialogFragment)
     }
 
+    /**
+     * Creates the dialog UI with permission explanation message and buttons
+     */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return context?.let {
-            // Use the Builder class for convenient dialog construction
-            val builder = AlertDialog.Builder(it)
-            builder.setMessage(R.string.permission_rationale_dialog)
-                .setPositiveButton(R.string.permission_dialog_accept)
-                { dialog, id ->
+            AlertDialog.Builder(it)
+                .setMessage(R.string.permission_rationale_dialog)
+                .setPositiveButton(R.string.permission_dialog_accept) { _, _ ->
                     listener.onDialogPositiveClick(this)
                 }
-                .setNegativeButton(R.string.permission_dialog_reject) { dialog, id ->
+                .setNegativeButton(R.string.permission_dialog_reject) { _, _ ->
                     listener.onDialogNegativeClick(this)
                 }
-
-
-            builder.create()
+                .create()
         } ?: throw IllegalStateException("Context cannot be null")
     }
 
+    /**
+     * Sets the listener for dialog button clicks
+     */
     fun setListener(listener: PermissionDialogListener) {
         this.listener = listener
     }
-
-    /*// Override the Fragment.onAttach() method to instantiate the PermissionDialogListener
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        // Verify that the host activity implements the callback interface
-
-        try {
-            // Instantiate the PermissionDialogListener so we can send events to the host
-            listener = context as PermissionDialogListener
-
-        } catch (e: ClassCastException) {
-            // The activity doesn't implement the interface, throw exception
-            throw ClassCastException(
-                (context.toString() +
-                        " must implement PermissionDialogListener")
-            )
-        }
-
-    }*/
 }

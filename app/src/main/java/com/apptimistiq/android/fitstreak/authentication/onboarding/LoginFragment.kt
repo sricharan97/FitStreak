@@ -27,54 +27,93 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
+/**
+ * LoginFragment handles the authentication flow for the application.
+ *
+ * This fragment:
+ * 1. Presents the initial login screen to the user
+ * 2. Launches the FirebaseUI authentication flow when the user clicks the login button
+ * 3. Handles authentication results and navigates to appropriate destinations based on
+ *    whether the user has completed the onboarding process
+ *
+ * Uses Firebase Authentication UI library for handling different authentication methods.
+ */
 class LoginFragment : Fragment() {
 
+    //region Properties
+    /** View binding for the login fragment layout */
     private lateinit var binding: FragmentLoginBinding
+    
+    /** Flag to track if user has completed onboarding */
     private var completedOnboarding: Boolean = false
 
-
-    // @Inject annotated fields will be provided by Dagger
+    /** ViewModel factory provided by Dagger DI */
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
+    /** Shared authentication view model */
     private val viewModel by activityViewModels<AuthenticationViewModel> { viewModelFactory }
-
-    companion object {
-        const val TAG = "LoginFragment"
-    }
-
-    private val signInLauncher =
+    
+    /** Contract for handling Firebase Auth UI results */
+    private val signInLauncher = 
         registerForActivityResult(FirebaseAuthUIActivityResultContract()) { res ->
             this.onSignInResult(res)
         }
+    //endregion
 
+    //region Constants
+    companion object {
+        /** Tag for logging purposes */
+        const val TAG = "LoginFragment"
+    }
+    //endregion
+
+    //region Lifecycle Methods
+    /**
+     * Injects dependencies when fragment is attached to activity
+     */
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (requireActivity().application as FitApp).appComponent.loginComponent().create()
             .inject(this)
     }
 
+    /**
+     * Inflates the fragment layout and initializes data binding
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        //get instance of the binding class using static inflate method
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
-
-        // Inflate the layout for this fragment
         return binding.root
-
     }
 
-
+    /**
+     * Sets up UI interactions and observes view model state
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupClickListeners()
+        observeUserState()
+    }
+    //endregion
+
+    //region UI Setup
+    /**
+     * Sets up click listeners for UI elements
+     */
+    private fun setupClickListeners() {
         binding.helloButton.setOnClickListener {
             launchSignInFlow()
         }
+    }
 
+    /**
+     * Observes user state to determine if onboarding is completed
+     */
+    private fun observeUserState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.userState.collect {
@@ -84,39 +123,25 @@ class LoginFragment : Fragment() {
                 }
             }
         }
-
-        /* viewLifecycleOwner.lifecycleScope.launch {
-             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                 viewModel.signInFlowStatus.collect {
-                     if (it) {
-                         if (completedOnboarding) {
-                             navigateHomeAfterSuccessfulLogin()
-                         } else {
-                             navigateOnboardingFlow()
-                         }
-
-                         viewModel.signInFlowReset()
-                     }
-                 }
-
-             }
-         }*/
-
     }
+    //endregion
 
-
-    //Trigger the sign in flow
+    //region Authentication
+    /**
+     * Initiates the Firebase authentication UI flow
+     *
+     * Configures available authentication providers (Email, Phone, Google)
+     * and launches the authentication UI with a custom layout
+     */
     private fun launchSignInFlow() {
-
-        // Choose authentication providers
+        // Configure authentication providers
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
             AuthUI.IdpConfig.PhoneBuilder().build(),
             AuthUI.IdpConfig.GoogleBuilder().build()
         )
 
-        //Custom AuthMethodPickerLayout
+        // Set up custom authentication layout
         val authMethodPickerLayout = AuthMethodPickerLayout
             .Builder(R.layout.custom_login_layout)
             .setGoogleButtonId(R.id.google_sign_in_button)
@@ -124,8 +149,7 @@ class LoginFragment : Fragment() {
             .setPhoneButtonId(R.id.phone_sign_in_button)
             .build()
 
-
-        // Create sign-in intent
+        // Build and launch sign-in intent
         val signInIntent = AuthUI.getInstance()
             .createSignInIntentBuilder()
             .setAvailableProviders(providers)
@@ -133,52 +157,53 @@ class LoginFragment : Fragment() {
             .setTheme(R.style.Theme_FitStreak)
             .build()
 
-        //signInIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        //Launch sign-inIntent
         signInLauncher.launch(signInIntent)
-
     }
 
-    //Handle once sign-in flow completes
+    /**
+     * Handles the result of the sign-in flow
+     *
+     * Based on the authentication result and the user's onboarding status,
+     * navigates to the appropriate destination
+     *
+     * @param result The Firebase authentication result
+     */
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
-
         val response = result.idpResponse
+        
         if (result.resultCode == RESULT_OK) {
-
             if (completedOnboarding) {
                 Log.d(TAG, "Inside the SignInResult success block")
                 navigateHomeAfterSuccessfulLogin()
             } else {
                 navigateOnboardingFlow()
             }
-
-
         } else {
-            //TODO: Sign in failed, If response is null the user canceled the
-            //    // sign-in flow using the back button. Otherwise check
-            //    // response.getError().getErrorCode() and handle the error
             Log.e(
                 TAG,
                 "Error in Sign in flow with following error code - ${response?.error?.errorCode}"
             )
-
         }
-
     }
+    //endregion
 
-    //navigate to Home_Dest
+    //region Navigation
+    /**
+     * Navigates to the main activity after successful authentication
+     * for users who have already completed onboarding
+     */
     private fun navigateHomeAfterSuccessfulLogin() {
-
         findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToMainActivity())
-        Log.d(TAG, "Navigation to home fragment in trigger  is  called")
+        Log.d(TAG, "Navigation to home fragment in trigger is called")
         requireActivity().finish()
         Log.d(TAG, "Activity finish called")
     }
 
-    //Navigate to On boarding flow for new users
+    /**
+     * Navigates to the onboarding flow for new users who need to complete setup
+     */
     private fun navigateOnboardingFlow() {
-
         findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToWelcomeFragment())
-
     }
+    //endregion
 }

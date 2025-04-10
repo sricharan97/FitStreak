@@ -36,28 +36,86 @@ import org.joda.time.format.DateTimeFormat
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+/**
+ * Constants for permission request and logging
+ */
 private const val GOOGLE_FIT_PERMISSION_REQUEST_CODE = 101
 private const val LOG_TAG = "DailyProgressFragment"
 
-/**Define a Enum class to decide whether to update the user entered activity value or to just
-// read from the fit store **/
-enum class UpdateType { SYSTEM_REQUEST, USER_REQUEST }
+/**
+ * Enum class to differentiate between system-initiated and user-initiated data updates
+ */
+enum class UpdateType { 
+    /** Update initiated by the system during normal data reading */
+    SYSTEM_REQUEST, 
+    
+    /** Update initiated by user interaction */
+    USER_REQUEST 
+}
 
+/**
+ * Fragment responsible for displaying and managing user's daily fitness progress.
+ * 
+ * This fragment handles:
+ * - Google Fit API authentication and permissions
+ * - Reading fitness data (steps, calories, sleep, hydration)
+ * - Subscribing to fitness data updates
+ * - Writing user-provided fitness data to Google Fit
+ * - Displaying daily progress in the UI
+ */
 class DailyProgressFragment : Fragment() {
 
+    // region Properties
+
+    /**
+     * View binding for the fragment
+     */
     private lateinit var binding: FragmentDailyProgressBinding
 
-    // @Inject annotated fields will be provided by Dagger
+    /**
+     * ViewModel factory injected by Dagger
+     */
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
+    /**
+     * Shared ViewModel for progress tracking
+     */
     private val viewModel by activityViewModels<ProgressViewModel> { viewModelFactory }
 
+    /**
+     * Adapter for the activity list RecyclerView
+     */
     private lateinit var recyclerAdapter: ActivityListAdapter
 
+    /**
+     * Timestamp for the end of calories calculation period
+     */
     private var caloriesEndTime: Long = DateTime.now().millis
 
-    //create fitnessOptions instance declaring the data types our app need
+    /**
+     * Google account for authentication with Fitness API
+     */
+    private lateinit var account: GoogleSignInAccount
+
+    /**
+     * Google Fit Recording API client
+     */
+    private lateinit var recordingClient: RecordingClient
+
+    /**
+     * Google Fit History API client
+     */
+    private lateinit var historyClient: HistoryClient
+
+    /**
+     * Google Fit Sessions API client
+     */
+    private lateinit var sessionsClient: SessionsClient
+
+    /**
+     * Google Fit API permissions configuration
+     */
     private val fitnessOptions = FitnessOptions.builder()
         .addDataType(TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
         .addDataType(TYPE_CALORIES_EXPENDED, FitnessOptions.ACCESS_READ)
@@ -72,44 +130,107 @@ class DailyProgressFragment : Fragment() {
         .accessSleepSessions(FitnessOptions.ACCESS_WRITE)
         .build()
 
-    private lateinit var account: GoogleSignInAccount
-
-    private lateinit var recordingClient: RecordingClient
-
-    private lateinit var historyClient: HistoryClient
-
-    private lateinit var sessionsClient: SessionsClient
-
-
-    //list of Data types required for the app
+    /**
+     * List of data types needed for fitness tracking
+     */
     private val dataTypeList = listOf(
         TYPE_STEP_COUNT_DELTA,
-        TYPE_CALORIES_EXPENDED, TYPE_HYDRATION, TYPE_SLEEP_SEGMENT
+        TYPE_CALORIES_EXPENDED, 
+        TYPE_HYDRATION, 
+        TYPE_SLEEP_SEGMENT
     )
 
+    // endregion
 
+    // region Fragment Lifecycle Methods
+
+    /**
+     * Injects dependencies when the fragment attaches to the context
+     */
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (requireActivity().application as FitApp).appComponent.dailyProgressComponent().create()
             .inject(this)
     }
 
+    /**
+     * Inflates the fragment layout
+     */
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater, 
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        binding =
-            DataBindingUtil.inflate(inflater, R.layout.fragment_daily_progress, container, false)
+        binding = DataBindingUtil.inflate(
+            inflater, 
+            R.layout.fragment_daily_progress, 
+            container, 
+            false
+        )
         return binding.root
-
     }
 
+    /**
+     * Sets up the view and initializes observers after the view is created
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Set up data binding
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
+        // Initialize Google Fit clients
+        initializeGoogleFitClients()
+        
+        // Set up RecyclerView adapter
+        initializeRecyclerAdapter()
+        
+        // Check OAuth permissions for Google Fit
+        checkForOAuthPermissions()
+        
+        // Set up UI state observers
+        setupUiStateObservers()
+        
+        // Set up navigation observers
+        setupNavigationObservers()
+        
+        // Set up Fit data update observers
+        setupFitDataUpdateObservers()
+    }
+
+    /**
+     * Handles the result of permission requests
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (resultCode) {
+            Activity.RESULT_OK -> when (requestCode) {
+                GOOGLE_FIT_PERMISSION_REQUEST_CODE -> viewModel.accessGoogleFit()
+                else -> {
+                    // Result wasn't from Google Fit
+                }
+            }
+            else -> {
+                Snackbar.make(
+                    binding.progressCoordinatorLayoutRoot, 
+                    "This app needs permissions to show the activities", 
+                    Snackbar.LENGTH_INDEFINITE
+                )
+                    .setAction(android.R.string.ok) { checkForOAuthPermissions() }
+                    .show()
+            }
+        }
+    }
+
+    // endregion
+
+    // region Initialization Methods
+    
+    /**
+     * Initializes the Google Fit API clients
+     */
+    private fun initializeGoogleFitClients() {
         //get instance of google account object to use with the API
         account = GoogleSignIn.getAccountForExtension(requireActivity(), fitnessOptions)
 
@@ -121,28 +242,31 @@ class DailyProgressFragment : Fragment() {
 
         //get Sessions client
         sessionsClient = Fitness.getSessionsClient(requireActivity(), account)
-
-
-        //initialize the recyclerAdapter by creating the ActivityListAdapter
+    }
+    
+    /**
+     * Initializes the RecyclerView adapter
+     */
+    private fun initializeRecyclerAdapter() {
         recyclerAdapter = ActivityListAdapter(ActivityItemListener {
             viewModel.navigateToEditActivity(it)
         })
-
-
-        //Check if user has granted necessary Oauth permissions to track the activities
-        checkForOAuthPermissions()
-
-        //observe the ui state
+        binding.recyclerView.adapter = recyclerAdapter
+    }
+    
+    /**
+     * Sets up UI state observers to respond to changes in the ViewModel's state
+     */
+    private fun setupUiStateObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
-                    if (uiState.canAccessGoogleFit and !uiState.subscriptionDone) {
-                        Log.d(LOG_TAG, "about to call addsubscriptions inside 0bserver")
+                    if (uiState.canAccessGoogleFit && !uiState.subscriptionDone) {
+                        Log.d(LOG_TAG, "about to call addsubscriptions inside observer")
                         addSubscriptions()
-
-                    } else if (uiState.canAccessGoogleFit and uiState.subscriptionDone and !uiState.readSteps
-                        and !uiState.readCalories and !uiState.readSleepHrs and !uiState.readWaterLitres
-                    ) {
+                    } else if (uiState.canAccessGoogleFit && uiState.subscriptionDone && 
+                               !uiState.readSteps && !uiState.readCalories && 
+                               !uiState.readSleepHrs && !uiState.readWaterLitres) {
                         Log.d(LOG_TAG, "about to call reading steps inside observer")
                         readDailyStepsTotal()
                         Log.d(LOG_TAG, "about to call reading water inside observer")
@@ -151,19 +275,20 @@ class DailyProgressFragment : Fragment() {
                         readDailySleepHrsTotal(UpdateType.SYSTEM_REQUEST)
                         Log.d(LOG_TAG, "about to call reading calories inside observer")
                         readDailyCaloriesExpended(UpdateType.SYSTEM_REQUEST)
-
-                    } else if (uiState.readSteps and uiState.readWaterLitres and uiState.readCalories
-                        and !uiState.activitySavedForDay
-                    ) {
+                    } else if (uiState.readSteps && uiState.readWaterLitres && uiState.readCalories && 
+                              !uiState.activitySavedForDay) {
                         Log.d(LOG_TAG, "about to call saving activity step inside observer")
                         viewModel.saveActivity()
                     }
-
                 }
             }
         }
-
-        //observe the triggers to edit activity
+    }
+    
+    /**
+     * Sets up navigation observers to handle UI navigation events
+     */
+    private fun setupNavigationObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.navigateEditActivity.collect {
@@ -182,14 +307,19 @@ class DailyProgressFragment : Fragment() {
                                 R.id.action_home_dest_to_editActivityFragment,
                                 bundle
                             )
-
                         }
                     }
                     viewModel.navigateToEditActivityCompleted()
                 }
             }
         }
-
+    }
+    
+    /**
+     * Sets up observers for Fit data update events from the ViewModel
+     */
+    private fun setupFitDataUpdateObservers() {
+        // Water update observer
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.updateFitWater.collect {
@@ -201,6 +331,7 @@ class DailyProgressFragment : Fragment() {
             }
         }
 
+        // Sleep update observer
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.updateFitSleep.collect {
@@ -212,12 +343,14 @@ class DailyProgressFragment : Fragment() {
             }
         }
 
+        // Exercise update observer
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.updateFitExercise.collect {
                     if (it != 0) {
                         addCaloriesData(
-                            it, viewModel.updateFitExerciseStartTimeObs.value,
+                            it, 
+                            viewModel.updateFitExerciseStartTimeObs.value,
                             viewModel.updateFitExerciseEndTimeObs.value
                         )
                         viewModel.fitExerciseUpdated()
@@ -225,17 +358,18 @@ class DailyProgressFragment : Fragment() {
                 }
             }
         }
-
-        //set the adapter on the recyclerView using Data binding
-        binding.recyclerView.adapter = recyclerAdapter
-
     }
 
+    // endregion
 
+    // region Google Fit Authentication
+
+    /**
+     * Checks if OAuth permissions have been granted and requests them if needed
+     */
     private fun checkForOAuthPermissions() {
-
-        //check if the user has previously granted the necessary data access
-        //if not initiate the authorization flow
+        // Check if the user has previously granted the necessary data access
+        // If not, initiate the authorization flow
         if (!GoogleSignIn.hasPermissions(account, fitnessOptions)) {
             GoogleSignIn.requestPermissions(
                 requireActivity(),
@@ -248,96 +382,64 @@ class DailyProgressFragment : Fragment() {
         }
     }
 
+    // endregion
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (resultCode) {
-            Activity.RESULT_OK -> when (requestCode) {
-                GOOGLE_FIT_PERMISSION_REQUEST_CODE -> viewModel.accessGoogleFit()
-                else -> {
-                    // Result wasn't from Google Fit
-                }
-            }
-            else -> {
-                Snackbar.make(
-                    binding.progressCoordinatorLayoutRoot, "This app needs permissions to " +
-                            "show the activities", Snackbar.LENGTH_INDEFINITE
-                )
-                    .setAction(android.R.string.ok) { checkForOAuthPermissions() }
-                    .show()
-            }
-        }
+    // region Google Fit API Operations
 
-    }
-
-
-    //Subscribe to required data types using Recording API from Google Fit
+    /**
+     * Subscribes to required fitness data types using the Recording API
+     */
     private fun addSubscriptions() {
-
-        //Get the list of current active subscriptions for the app
+        // Get the list of current active subscriptions for the app
         recordingClient.listSubscriptions()
             .addOnSuccessListener { subscriptions ->
-
                 val scDataTypeList = subscriptions.map { it.dataType }
 
                 for (type in dataTypeList) {
                     Log.d(LOG_TAG, "$type is in the subscription list")
 
-                    //If there is no active subscription for the required data types,subscribe.
+                    // If there is no active subscription for the required data types, subscribe
                     if (type !in scDataTypeList) {
                         recordingClient.subscribe(type)
                             .addOnSuccessListener {
-                                Log.d(
-                                    LOG_TAG,
-                                    "successfully subscribed to data type : ${type.name}"
-                                )
+                                Log.d(LOG_TAG, "successfully subscribed to data type: ${type.name}")
                             }
                             .addOnFailureListener {
-                                Log.d(
-                                    LOG_TAG,
-                                    "There is a failure subscribing to type : ${type.name}"
-                                )
+                                Log.d(LOG_TAG, "Failed to subscribe to type: ${type.name}")
                             }
                     } else {
-                        Log.d(
-                            LOG_TAG,
-                            "Already subscribed for data type : ${type.name}"
-                        )
+                        Log.d(LOG_TAG, "Already subscribed for data type: ${type.name}")
                     }
-
                 }
                 viewModel.doneWithSubscription()
             }
-
-
     }
 
+    /**
+     * Reads the daily step count total from Google Fit
+     */
     private fun readDailyStepsTotal() {
-
-
         historyClient.readDailyTotal(dataTypeList[0])
             .addOnSuccessListener { result ->
                 val totalSteps =
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_STEPS)?.asInt() ?: 0
-                Log.d(LOG_TAG, "Total steps until now are : $totalSteps")
+                Log.d(LOG_TAG, "Total steps until now are: $totalSteps")
                 viewModel.addSteps(totalSteps)
-
             }
             .addOnFailureListener { e ->
                 Log.d(
-                    LOG_TAG, "Following exception has been raised while reading" +
-                            "daily steps total : $e"
+                    LOG_TAG, 
+                    "Exception raised while reading daily steps total: $e"
                 )
-
             }
-
     }
 
-
+    /**
+     * Reads the daily calories expended from Google Fit
+     * 
+     * @param updateType Whether this is a system-initiated or user-initiated request
+     */
     private fun readDailyCaloriesExpended(updateType: UpdateType) {
-        //addHeightAndWeight()
-
-
         historyClient.readDailyTotal(dataTypeList[1])
             .addOnSuccessListener { result ->
                 val totalCalories =
@@ -351,108 +453,53 @@ class DailyProgressFragment : Fragment() {
                     UpdateType.USER_REQUEST -> viewModel.updateUserEnteredValues(totalCalories)
                 }
 
-
                 Log.d(
                     LOG_TAG,
-                    "Total calories expended until now at time : $caloriesEndTime are : $totalCalories"
+                    "Total calories expended until now at time: $caloriesEndTime are: $totalCalories"
                 )
-
             }
             .addOnFailureListener { e ->
                 Log.d(
-                    LOG_TAG, "Following exception has been raised while reading" +
-                            "daily calories total : $e"
+                    LOG_TAG, 
+                    "Exception raised while reading daily calories total: $e"
                 )
             }
-
     }
 
-    /*
-
-        private fun addHeightAndWeight() {
-
-            val timestamp = DateTime().millis
-            val height = 1.75f
-            val weight = 75f
-
-            val heightDataSource = DataSource.Builder()
-                .setAppPackageName(getString(R.string.app_package))
-                .setDataType(TYPE_HEIGHT)
-                .setType(TYPE_RAW)
-                .build()
-
-            val weightDataSource = DataSource.Builder()
-                .setAppPackageName(getString(R.string.app_package))
-                .setDataType(TYPE_WEIGHT)
-                .setType(TYPE_RAW)
-                .build()
-
-            val heightDataPoint = DataPoint.builder(heightDataSource)
-                .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
-                .setField(Field.FIELD_HEIGHT, height)
-                .build()
-
-            val heightDataSet = DataSet.builder(heightDataSource)
-                .add(heightDataPoint)
-                .build()
-
-            val weightDataPoint = DataPoint.builder(weightDataSource)
-                .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
-                .setField(Field.FIELD_WEIGHT, weight)
-                .build()
-
-            val weightDataSet = DataSet.builder(weightDataSource)
-                .add(weightDataPoint)
-                .build()
-
-            historyClient.insertData(heightDataSet)
-                .addOnSuccessListener {
-                    Log.d(LOG_TAG, "inserted height of the user - $height")
-                }
-                .addOnFailureListener { e ->
-                    Log.d(LOG_TAG, "there was a problem inserting the height of the user $e")
-
-                }
-
-            historyClient.insertData(weightDataSet)
-                .addOnSuccessListener {
-                    Log.d(LOG_TAG, "Inserted the weight of the user - $weight")
-
-                }
-                .addOnFailureListener { e ->
-                    Log.d(LOG_TAG, "there was a problem inserting the weight of the user $e")
-                }
-
-        }
-
-
-    */
+    /**
+     * Reads the daily hydration totals from Google Fit
+     * 
+     * @param updateType Whether this is a system-initiated or user-initiated request
+     */
     private fun readDailyHydrationTotal(updateType: UpdateType) {
-
         historyClient.readDailyTotal(dataTypeList[2])
             .addOnSuccessListener { result ->
                 val totalLitres =
                     result.dataPoints.firstOrNull()?.getValue(Field.FIELD_VOLUME)?.asFloat()
                         ?.toInt() ?: 0
-                Log.d(LOG_TAG, "Total water consumed until now in litres is : $totalLitres")
+                Log.d(LOG_TAG, "Total water consumed until now in litres is: $totalLitres")
                 when (updateType) {
                     UpdateType.SYSTEM_REQUEST -> viewModel.addLitres(totalLitres)
                     UpdateType.USER_REQUEST -> viewModel.updateUserEnteredValues(totalLitres)
                 }
-
             }
             .addOnFailureListener { e ->
                 Log.d(
-                    LOG_TAG, "Following exception has been raised while reading" +
-                            "daily hydration total : $e"
+                    LOG_TAG, 
+                    "Exception raised while reading daily hydration total: $e"
                 )
             }
-
     }
 
-
+    /**
+     * Adds calories data to Google Fit for a specific time interval
+     * 
+     * @param caloriesExpended The number of calories expended
+     * @param startTime The start time for the activity in HH:mm format
+     * @param endTime The end time for the activity in HH:mm format
+     */
     private fun addCaloriesData(caloriesExpended: Int, startTime: String, endTime: String) {
-        Log.d(LOG_TAG, "inside addCalories data with value being $caloriesExpended")
+        Log.d(LOG_TAG, "Inside addCalories data with value being $caloriesExpended")
         val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm")
         val dateFormat = DateTimeFormat.forPattern("yyyy-MM-dd")
         val currentDate = DateTime.now().toString(dateFormat)
@@ -463,9 +510,8 @@ class DailyProgressFragment : Fragment() {
         val endTimeInterval = formatter.parseDateTime(endDateTime).millis
         Log.d(
             LOG_TAG,
-            "startTimeString passed :$startTimeInterval and endTimeString passed: $endTimeInterval"
+            "startTimeString passed: $startTimeInterval and endTimeString passed: $endTimeInterval"
         )
-
 
         val caloriesDataSource = DataSource.Builder()
             .setAppPackageName(getString(R.string.app_package))
@@ -490,29 +536,27 @@ class DailyProgressFragment : Fragment() {
             historyClient.insertData(caloriesDataset)
                 .addOnSuccessListener {
                     readDailyCaloriesExpended(UpdateType.USER_REQUEST)
-                    Log.d(LOG_TAG, "Successfully inserted the calories data of $caloriesExpended")
-
+                    Log.d(LOG_TAG, "Successfully inserted calories data of $caloriesExpended")
                 }
                 .addOnFailureListener {
                     Log.d(
                         LOG_TAG,
-                        "Failed to add calories data due to the exception - ${it.message}"
+                        "Failed to add calories data due to: ${it.message}"
                     )
                 }
         } catch (e: IllegalArgumentException) {
-            Log.d(LOG_TAG, "data point out of range : ${e.message}")
+            Log.d(LOG_TAG, "Data point out of range: ${e.message}")
         }
-
-
     }
 
-
-
+    /**
+     * Adds hydration data to Google Fit
+     * 
+     * @param waterLitresConsumed The amount of water consumed in litres
+     */
     private fun addHydrationData(waterLitresConsumed: Int) {
-
         val timestamp = DateTime().minusHours(1).millis
-
-        Log.d(LOG_TAG, "timestamp passed for hydration data :$timestamp ")
+        Log.d(LOG_TAG, "Timestamp passed for hydration data: $timestamp")
 
         // Create a data source
         val hydrationDataSource = DataSource.Builder()
@@ -520,7 +564,6 @@ class DailyProgressFragment : Fragment() {
             .setDataType(TYPE_HYDRATION)
             .setType(TYPE_RAW)
             .build()
-
 
         val hydrationDatapoint = DataPoint.builder(hydrationDataSource)
             .setTimestamp(timestamp, TimeUnit.MILLISECONDS)
@@ -534,25 +577,23 @@ class DailyProgressFragment : Fragment() {
         historyClient.insertData(hydrationDataSet)
             .addOnSuccessListener {
                 readDailyHydrationTotal(UpdateType.USER_REQUEST)
-                Log.d(LOG_TAG, "Successfully inserted the water data of $waterLitresConsumed")
-
+                Log.d(LOG_TAG, "Successfully inserted water data of $waterLitresConsumed")
             }
             .addOnFailureListener {
                 Log.d(LOG_TAG, "Failed to add hydration data")
             }
-
     }
 
-
     /**
-     * Work with Sessions to read the sleep session data
+     * Reads the daily sleep hours from Google Fit
+     * 
+     * @param updateType Whether this is a system-initiated or user-initiated request
      */
     private fun readDailySleepHrsTotal(updateType: UpdateType) {
-
         val endTime = DateTime.now()
         val startTime = endTime.minusDays(1)
 
-        //Build the session read request first
+        // Build the session read request first
         val sessionReadRequest = SessionReadRequest.Builder()
             .readSessionsFromAllApps()
             .includeSleepSessions()
@@ -560,39 +601,38 @@ class DailyProgressFragment : Fragment() {
             .setTimeInterval(startTime.millis, endTime.millis, TimeUnit.MILLISECONDS)
             .build()
 
-        //Read the sleep session using sessions client
+        // Read the sleep session using sessions client
         Log.d(LOG_TAG, "Trying to read the sleep hours for the day")
         sessionsClient.readSession(sessionReadRequest)
             .addOnSuccessListener { response ->
-
                 for (session in response.sessions) {
                     val sessionStart = session.getStartTime(TimeUnit.HOURS)
                     val sessionEnd = session.getEndTime(TimeUnit.HOURS)
                     val sleepHrs = (sessionEnd - sessionStart).toInt()
-                    Log.d(LOG_TAG, "Total sleep hours are : $sleepHrs")
+                    Log.d(LOG_TAG, "Total sleep hours are: $sleepHrs")
                     when (updateType) {
                         UpdateType.SYSTEM_REQUEST -> viewModel.addSleepHrs(sleepHrs)
                         UpdateType.USER_REQUEST -> viewModel.updateUserEnteredValues(sleepHrs)
                     }
                 }
-
             }.addOnFailureListener { e ->
                 Log.d(
-                    LOG_TAG, "Following exception has been raised while reading" +
-                            "daily sleep hrs total : $e"
+                    LOG_TAG, 
+                    "Exception raised while reading daily sleep hours total: $e"
                 )
-
             }
-
     }
 
+    /**
+     * Adds sleep hours data to Google Fit
+     * 
+     * @param sleepHrs The number of hours slept
+     */
     private fun addSleepHrsForDay(sleepHrs: Int) {
-
-        //Give random sleep start and end dates as the exact time is not relevant in
+        // Give random sleep start and end dates as the exact time is not relevant in
         // our case but for number of hours
         val sleepStart = DateTime.now().minusHours(sleepHrs).millis
         val sleepEnd = DateTime.now().millis
-
 
         // Create the sleep session
         val session = Session.Builder()
@@ -612,23 +652,12 @@ class DailyProgressFragment : Fragment() {
         sessionsClient.insertSession(request)
             .addOnSuccessListener {
                 readDailySleepHrsTotal(UpdateType.USER_REQUEST)
-                Log.d(LOG_TAG, "inserted the sleep hrs - ${(sleepEnd - sleepStart).div(3600000)}")
-
+                Log.d(LOG_TAG, "Inserted sleep hrs: ${(sleepEnd - sleepStart) / 3600000}")
             }
             .addOnFailureListener { e ->
-
-                Log.w(LOG_TAG, "There was a problem inserting the session", e)
-
+                Log.w(LOG_TAG, "Problem inserting the session", e)
             }
-
     }
 
-
+    // endregion
 }
-
-
-
-
-
-
-

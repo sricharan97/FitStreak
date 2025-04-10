@@ -9,7 +9,7 @@
             name="viewModel"
             type="com.apptimistiq.android.fitstreak.main.dashboard.DashboardViewModel" />
 
-        <import type="com.apptimistiq.android.fitstreak.main.dashboard.GoalUserInfo" />
+        <import type="com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo" />
 
     </data>
 
