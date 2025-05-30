@@ -50,6 +50,7 @@ class UserProfileRepository @Inject constructor(
         val HEIGHT_INFO = intPreferencesKey("userHeight")
         val WEIGHT_INFO = intPreferencesKey("userWeight")
         val DIET_SELECTION = stringPreferencesKey("diet_selection")
+        val USER_UID = stringPreferencesKey("user_uid")
         val USER_LOGGED_IN = booleanPreferencesKey("user_logged_in")
         val USER_NAME = stringPreferencesKey("user_name")
         val USER_ONBOARDED = booleanPreferencesKey("user_onboarded")
@@ -183,7 +184,13 @@ class UserProfileRepository @Inject constructor(
                 val userLoggedIn = value[PreferenceKeys.USER_LOGGED_IN] ?: false
                 val userName = value[PreferenceKeys.USER_NAME] ?: "User"
                 val userOnboarded = value[PreferenceKeys.USER_ONBOARDED] ?: false
-                UserStateInfo(userName, userLoggedIn, userOnboarded)
+                val uid = value[PreferenceKeys.USER_UID] ?: ""
+                UserStateInfo(
+                    uid = uid,
+                    userName = userName,
+                    isUserLoggedIn = userLoggedIn,
+                    isOnboarded = userOnboarded
+                )
             }
 
     /**
@@ -317,9 +324,36 @@ class UserProfileRepository @Inject constructor(
                 preferences[PreferenceKeys.USER_LOGGED_IN] = userStateInfo.isUserLoggedIn
                 preferences[PreferenceKeys.USER_NAME] = userStateInfo.userName
                 preferences[PreferenceKeys.USER_ONBOARDED] = userStateInfo.isOnboarded
+                preferences[PreferenceKeys.USER_UID] = userStateInfo.uid
             }
         } catch (exception: IOException) {
             Log.e(LOG_TAG, "There is an IO exception while saving the userStateInfo")
+            throw exception
+        }
+    }
+
+    /**
+     * Resets all onboarding data and user-specific preferences to their default state.
+     *
+     * @throws IOException if there's an error writing to DataStore
+     */
+    override suspend fun resetOnboardingAndGoalData() {
+        try {
+            userProfilePreferencesStore.edit { preferences ->
+                // Reset goals
+                preferences[PreferenceKeys.STEP_GOAL] = 0
+                preferences[PreferenceKeys.WATER_GLASS_GOAL] = 0
+                preferences[PreferenceKeys.EXERCISE_GOAL] = 0
+                preferences[PreferenceKeys.SLEEP_GOAL] = 0
+                // Reset user info
+                preferences[PreferenceKeys.HEIGHT_INFO] = 168 // Default height
+                preferences[PreferenceKeys.WEIGHT_INFO] = 60  // Default weight
+                preferences[PreferenceKeys.DIET_SELECTION] = "Vegetarian" // Default diet
+                // Note: USER_LOGGED_IN, USER_NAME, USER_ONBOARDED, USER_UID
+                // will be handled by a separate call to updateUserStateInfo after sign-out.
+            }
+        } catch (exception: IOException) {
+            Log.e(LOG_TAG, "There is an IO exception while resetting onboarding and goal data")
             throw exception
         }
     }

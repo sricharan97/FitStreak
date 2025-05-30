@@ -126,4 +126,10 @@ interface UserProfileDataSource {
      * @param userStateInfo The new user state information object.
      */
     suspend fun updateUserStateInfo(userStateInfo: UserStateInfo)
+
+    /**
+     * Resets all onboarding data and user-specific preferences to their default state.
+     * This includes goals, height, weight, diet selection, and onboarding status.
+     */
+    suspend fun resetOnboardingAndGoalData()
 }

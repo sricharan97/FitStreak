@@ -44,6 +44,7 @@ data class UserInfoPreferences(
  * @property isOnboarded Indicates whether the user has completed the onboarding process
  */
 data class UserStateInfo(
+    val uid: String = "", //Firebase UID
     val userName: String = "User",
     val isUserLoggedIn: Boolean = false,
     val isOnboarded: Boolean = false

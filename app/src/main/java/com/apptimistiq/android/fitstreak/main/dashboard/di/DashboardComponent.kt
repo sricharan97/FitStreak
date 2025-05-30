@@ -1,5 +1,6 @@
 package com.apptimistiq.android.fitstreak.main.dashboard.di
 
+import com.apptimistiq.android.fitstreak.authentication.di.AuthenticationModule
 import com.apptimistiq.android.fitstreak.main.dashboard.DashboardFragment
 import dagger.Subcomponent
 
@@ -10,7 +11,7 @@ import dagger.Subcomponent
  * classes, including the DashboardFragment. It uses DashboardModule for providing
  * Dashboard-specific dependencies.
  */
-@Subcomponent(modules = [DashboardModule::class])
+@Subcomponent(modules = [DashboardModule::class, AuthenticationModule::class])
 interface DashboardComponent {
 
     /**

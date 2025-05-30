@@ -16,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.FragmentDashboardBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ import javax.inject.Inject
  * - Displaying current fitness metrics
  * - Showing progress towards user goals
  * - Providing navigation to edit goal screens
+ * - Allowing user to log out
  *
  * Uses Dagger for dependency injection and the MVVM architecture pattern.
  */
@@ -42,6 +44,9 @@ class DashboardFragment : Fragment() {
 
     /** Shared ViewModel instance scoped to the activity */
     private val viewModel by activityViewModels<DashboardViewModel> { viewModelFactory }
+
+    /** Shared Authentication ViewModel instance scoped to the activity */
+    private val authViewModel by activityViewModels<AuthenticationViewModel> { viewModelFactory }
 
     /**
      * Called when fragment is attached to context. Handles dependency injection.
@@ -79,6 +84,7 @@ class DashboardFragment : Fragment() {
 
         setupDataBinding()
         observeNavigationEvents()
+        setupLogoutButton()
     }
 
     /**
@@ -106,6 +112,16 @@ class DashboardFragment : Fragment() {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Sets up the logout button click listener
+     */
+    private fun setupLogoutButton() {
+        binding.logoutButton.setOnClickListener {
+            authViewModel.signOutAndResetData()
+            // The MainActivity will automatically redirect to login screen based on auth state
         }
     }
 }

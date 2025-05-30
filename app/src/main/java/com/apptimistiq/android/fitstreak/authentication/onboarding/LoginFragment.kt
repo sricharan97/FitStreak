@@ -23,7 +23,6 @@ import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -43,9 +42,6 @@ class LoginFragment : Fragment() {
     //region Properties
     /** View binding for the login fragment layout */
     private lateinit var binding: FragmentLoginBinding
-    
-    /** Flag to track if user has completed onboarding */
-    private var completedOnboarding: Boolean = false
 
     /** ViewModel factory provided by Dagger DI */
     @Inject
@@ -96,7 +92,7 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupClickListeners()
-        observeUserState()
+
     }
     //endregion
 
@@ -110,20 +106,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    /**
-     * Observes user state to determine if onboarding is completed
-     */
-    private fun observeUserState() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.userState.collect {
-                    if (it.isOnboarded) {
-                        completedOnboarding = true
-                    }
-                }
-            }
-        }
-    }
+
     //endregion
 
     //region Authentication
@@ -155,6 +138,7 @@ class LoginFragment : Fragment() {
             .setAvailableProviders(providers)
             .setAuthMethodPickerLayout(authMethodPickerLayout)
             .setTheme(R.style.Theme_FitStreak)
+            .setIsSmartLockEnabled(false,true) //Attempt to force Auth picker to show
             .build()
 
         signInLauncher.launch(signInIntent)
@@ -170,19 +154,35 @@ class LoginFragment : Fragment() {
      */
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
+        binding.progressOverlay.visibility = View.VISIBLE // Show loading overlay immediately
         
         if (result.resultCode == RESULT_OK) {
-            if (completedOnboarding) {
-                Log.d(TAG, "Inside the SignInResult success block")
-                navigateHomeAfterSuccessfulLogin()
-            } else {
-                navigateOnboardingFlow()
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                try{
+                    val userStateInfo = viewModel.finalizeAuthentication() // Fetches updated UserStateInfo
+                    if (userStateInfo.isOnboarded) {
+                        Log.d(TAG, "Sign-in successful. User already onboarded. Navigating to home.")
+                        navigateHomeAfterSuccessfulLogin()
+                    } else {
+                        Log.d(TAG, "Sign-in successful. User needs onboarding. Navigating to welcome.")
+                        navigateOnboardingFlow()
+                    }
+                }catch (e:Exception) {
+                    Log.e(TAG, "Error in finalizing authentication: ${e.message}")
+                    // Handle error (e.g., show a message to the user)
+                } finally {
+                    binding.progressOverlay.visibility = View.GONE
+                }
             }
+
         } else {
             Log.e(
                 TAG,
                 "Error in Sign in flow with following error code - ${response?.error?.errorCode}"
             )
+            binding.progressOverlay.visibility = View.GONE // Ensure overlay is hidden on failure
+            // Optionally, show a Snackbar or Toast for the sign-in failure
         }
     }
     //endregion
@@ -193,17 +193,15 @@ class LoginFragment : Fragment() {
      * for users who have already completed onboarding
      */
     private fun navigateHomeAfterSuccessfulLogin() {
-        findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToMainActivity())
-        Log.d(TAG, "Navigation to home fragment in trigger is called")
-        requireActivity().finish()
-        Log.d(TAG, "Activity finish called")
+        findNavController().navigate(R.id.action_loginFragment_to_daily_progress_fragment)
+        Log.d(TAG, "Navigation to daily progress fragment is called")
     }
 
     /**
      * Navigates to the onboarding flow for new users who need to complete setup
      */
     private fun navigateOnboardingFlow() {
-        findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToWelcomeFragment())
+        findNavController().navigate(R.id.action_loginFragment_to_welcomeFragment)
     }
     //endregion
 }

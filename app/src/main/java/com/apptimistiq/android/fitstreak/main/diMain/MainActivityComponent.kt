@@ -8,6 +8,7 @@
 
 package com.apptimistiq.android.fitstreak.main.diMain
 
+import com.apptimistiq.android.fitstreak.authentication.di.AuthenticationModule
 import com.apptimistiq.android.fitstreak.main.MainActivity
 import com.apptimistiq.android.fitstreak.main.home.di.HomeTransitionModule
 import dagger.Subcomponent
@@ -17,7 +18,7 @@ import dagger.Subcomponent
  * Extends functionality by including modules required for transitions 
  * and other main activity related dependencies.
  */
-@Subcomponent(modules = [HomeTransitionModule::class])
+@Subcomponent(modules = [HomeTransitionModule::class, AuthenticationModule::class])
 interface MainActivityComponent {
 
     /**

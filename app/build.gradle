@@ -13,7 +13,7 @@ apikeyProperties.load(new FileInputStream(apikeyPropertiesFile))
 
 android {
     namespace "com.apptimistiq.android.fitstreak"
-    compileSdk 33
+    compileSdk 34
 
     buildFeatures {
 
@@ -25,7 +25,7 @@ android {
     defaultConfig {
         applicationId "com.apptimistiq.android.fitstreak"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -57,13 +57,17 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
+    // Import the BoM for the Firebase platform
+    implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
 
     // Declare the dependencies for the desired Firebase products
     // For example, declare the dependencies for Firebase Authentication and Cloud Firestore
     implementation ("com.firebaseui:firebase-ui-auth:$firebase_ui_auth_version")
 
-    //Declare the dependencies for FirebaseAnalytics
-    implementation 'com.google.firebase:firebase-analytics-ktx'
+    // Declare the dependencies for the desired Firebase products
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation("com.google.firebase:firebase-auth-ktx") // Added -ktx for Kotlin extensions
+    implementation("com.google.firebase:firebase-analytics-ktx") // Added -ktx
 
     //Separately declaring google play service auth due to issues with target sdk 31 for default version
     implementation ("com.google.android.gms:play-services-auth:$google_services_auth_version")
@@ -89,6 +93,8 @@ dependencies {
 
     //Room dependencies
     implementation "androidx.room:room-runtime:$room_version"
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.9'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.8.9'
     ksp "androidx.room:room-compiler:$room_version"
 
     // optional - Kotlin Extensions and Coroutines support for Room

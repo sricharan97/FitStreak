@@ -10,6 +10,7 @@ package com.apptimistiq.android.fitstreak.authentication
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
+import com.apptimistiq.android.fitstreak.main.data.AuthDataSource
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
 import kotlinx.coroutines.flow.*
@@ -25,9 +26,11 @@ import javax.inject.Inject
  * - Saving user profile information
  *
  * @property dataSource The data source for accessing and storing activity and user data
+ * @property authDataSource The data source for authentication operations
  */
 class AuthenticationViewModel @Inject constructor(
-    private val dataSource: ActivityDataSource
+    private val dataSource: ActivityDataSource,
+    private val authDataSource: AuthDataSource
 ) : ViewModel() {
 
     /**
@@ -39,6 +42,17 @@ class AuthenticationViewModel @Inject constructor(
         started = SharingStarted.Eagerly,
         initialValue = UserStateInfo()
     )
+
+    /**
+     * Check if the user is currently authenticated
+     */
+    val isAuthenticated: StateFlow<Boolean> = authDataSource.observeAuthState()
+        .map { it.isUserLoggedIn }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = false
+        )
 
     /**
      * Persists a user's fitness goal to the data source.
@@ -61,6 +75,38 @@ class AuthenticationViewModel @Inject constructor(
     fun saveUserStateInfo(userStateInfo: UserStateInfo) {
         viewModelScope.launch {
             dataSource.saveUserState(userStateInfo)
+        }
+    }
+
+    /**
+     * Finalizes the authentication process by:
+     * 1. Getting the current Firebase user
+     * 2. Updating the UserStateInfo with authentication data
+     * 3. Returning the updated user state
+     * 
+     * This consolidates Firebase Auth data with local preferences.
+     */
+    suspend fun finalizeAuthentication(): UserStateInfo {
+        return authDataSource.finalizeAuthentication()
+    }
+
+    /**
+     * Signs the current user out from Firebase and updates local state
+     */
+    fun signOut() {
+        viewModelScope.launch {
+            authDataSource.signOut()
+        }
+    }
+
+    /**
+     * Signs the current user out, resets their data and updates local state.
+     * This is useful for testing the login and onboarding flows without
+     * having to uninstall the app.
+     */
+    fun signOutAndResetData() {
+        viewModelScope.launch {
+            authDataSource.signOutAndResetData()
         }
     }
 }

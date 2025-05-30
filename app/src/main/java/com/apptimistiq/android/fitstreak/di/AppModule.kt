@@ -36,6 +36,16 @@ abstract class AppModule {
     abstract fun bindUserProfileDataSource(goalRepository: UserProfileRepository): UserProfileDataSource
 
     /**
+     * Binds the implementation of AuthDataSource to FirebaseAuthRepository.
+     *
+     * @param firebaseAuthRepository The concrete implementation to be used
+     * @return The interface type for dependency injection
+     */
+    @Singleton
+    @Binds
+    abstract fun bindAuthDataSource(firebaseAuthRepository: FirebaseAuthRepository): AuthDataSource
+
+    /**
      * Binds the implementation of RecipeRemoteDataSource to RecipeRemoteRepository.
      * 
      * @param recipeRemoteRepository The concrete implementation to be used

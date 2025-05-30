@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.apptimistiq.android.fitstreak">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--Need Activity Recognition permission to access the google fit api's data types -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
@@ -17,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FitStreak">
         <activity
-            android:name="com.apptimistiq.android.fitstreak.authentication.AuthenticationActivity"
+            android:name="com.apptimistiq.android.fitstreak.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,7 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.apptimistiq.android.fitstreak.main.MainActivity" />
     </application>
 
 </manifest>

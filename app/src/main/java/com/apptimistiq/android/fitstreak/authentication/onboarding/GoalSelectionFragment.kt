@@ -9,7 +9,10 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
@@ -17,6 +20,8 @@ import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
@@ -107,16 +112,46 @@ class GoalSelectionFragment : Fragment() {
         // Handle "Done" button click to save goals and navigate forward
         binding.goalSelectionDoneButton.setOnClickListener {
             // Save all goal values
-            viewModel.saveGoal(GoalType.STEP, stepCountGoal)
-            viewModel.saveGoal(GoalType.WATER, waterGlassesGoal)
-            viewModel.saveGoal(GoalType.SLEEP, sleepHrsGoal)
-            viewModel.saveGoal(GoalType.EXERCISE, exerciseCalGoal)
-            
-            // Navigate to main app flow
-            navigateToHomeDest()
-            requireActivity().finish()
+            saveGoalsAndMarkOnboardingComplete()
+        }
+
+        observeUserStateForNavigation()
+    }
+
+    private fun saveGoalsAndMarkOnboardingComplete() {
+        // Save individual goals
+        // Ensure GoalType enum values (STEPS, WATER, SLEEP, EXERCISE) are correct
+        viewModel.saveGoal(GoalType.STEP, binding.stepCountPicker.value)
+        viewModel.saveGoal(GoalType.WATER, binding.waterGlassPicker.value)
+        viewModel.saveGoal(GoalType.SLEEP, binding.sleepHourPicker.value)
+        viewModel.saveGoal(GoalType.EXERCISE, binding.exerciseCalPicker.value)
+
+        // Update UserStateInfo to mark onboarding as complete
+        viewLifecycleOwner.lifecycleScope.launch {
+            val currentState = viewModel.userState.first() // Get the latest state
+            // isUserLoggedIn should already be true from the login flow.
+            // isOnboarded is the flag we are setting to true here.
+            val updatedUserState = currentState.copy(isOnboarded = true)
+            viewModel.saveUserStateInfo(updatedUserState)
+            Log.d(LOG_TAG, "User state updated to onboarded: true. Waiting for observer to navigate.")
+            // The observer will pick up this change and navigate.
         }
     }
+
+    private fun observeUserStateForNavigation() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.userState.collect { userState ->
+                    // Check if user is logged in and onboarding is complete
+                    if (userState.isUserLoggedIn && userState.isOnboarded) {
+                        // Ensure navigation happens only once and from this fragment
+                        navigateToHomeDest()
+                    }
+                }
+            }
+        }
+    }
+
 
     // ===== PICKER SETUP METHODS =====
 
@@ -199,12 +234,10 @@ class GoalSelectionFragment : Fragment() {
      * This completes the onboarding flow.
      */
     private fun navigateToHomeDest() {
-        // Mark user as onboarded in preferences
-        viewModel.saveUserStateInfo(UserStateInfo(isOnboarded = true))
-        
-        // Navigate to main activity
-        findNavController().navigate(
-            GoalSelectionFragmentDirections.actionGoalSelectionFragmentToMainActivity()
-        )
+
+        if (findNavController().currentDestination?.id == R.id.goalSelectionFragment) {
+            Log.d(LOG_TAG, "User is logged in and onboarded. Navigating to daily progress.")
+            findNavController().navigate(R.id.action_goalSelectionFragment_to_daily_progress_fragment)
+        }
     }
 }
