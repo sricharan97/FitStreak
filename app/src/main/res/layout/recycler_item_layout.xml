@@ -15,7 +15,7 @@
             type="com.apptimistiq.android.fitstreak.main.progressTrack.ActivityItemListener" />
     </data>
 
-    <androidx.constraintlayout.motion.widget.MotionLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/goal_selection_item_layout"
         android:layout_width="match_parent"
         android:layout_height="120dp"
@@ -23,9 +23,7 @@
         android:layout_marginTop="@dimen/daily_progress_item_margin"
         android:layout_marginEnd="@dimen/daily_progress_item_margin"
         android:background="@drawable/goal_view_background"
-        android:onClick="@{() -> clickListener.onClick(activity_item)}"
-        app:layoutDescription="@xml/activity_item_motion_scene_01"
-        tools:showPaths="true">
+        android:onClick="@{() -> clickListener.onClick(activity_item)}">
 
 
         <ImageView
@@ -102,17 +100,6 @@
             app:layout_constraintStart_toEndOf="@+id/reading_separator"
             app:layout_constraintTop_toBottomOf="@+id/activity_type_text" />
 
-        <ImageView
-            android:id="@+id/activity_completed_animation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="parent"
-            app:srcCompat="@drawable/ic_activity_completed_animation" />
-
-
-    </androidx.constraintlayout.motion.widget.MotionLayout>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

@@ -193,15 +193,15 @@ class LoginFragment : Fragment() {
      * for users who have already completed onboarding
      */
     private fun navigateHomeAfterSuccessfulLogin() {
-        findNavController().navigate(R.id.action_loginFragment_to_daily_progress_fragment)
-        Log.d(TAG, "Navigation to daily progress fragment is called")
+        findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToHomeTransitionFragment())
+        Log.d(TAG, "Navigation to home transition fragment is called")
     }
 
     /**
      * Navigates to the onboarding flow for new users who need to complete setup
      */
     private fun navigateOnboardingFlow() {
-        findNavController().navigate(R.id.action_loginFragment_to_welcomeFragment)
+        findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToWelcomeFragment())
     }
     //endregion
 }

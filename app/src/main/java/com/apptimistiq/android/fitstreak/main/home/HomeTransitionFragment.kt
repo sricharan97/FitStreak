@@ -3,9 +3,11 @@ package com.apptimistiq.android.fitstreak.main.home
 import android.Manifest
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,9 +27,7 @@ import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentHomeTransitionBinding
-import com.apptimistiq.android.fitstreak.main.MainActivity
 import com.apptimistiq.android.fitstreak.main.MainViewModel
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -55,10 +55,6 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
     /** Shared ViewModel instance */
     private val viewModel by activityViewModels<MainViewModel> { viewModelFactory }
 
-    /** Access to the BottomNavigationView from the hosting activity */
-    private val bottomNavigationView =
-        (activity as? MainActivity)?.findViewById<BottomNavigationView>(R.id.bottom_nav_view)
-
     // --- Permission Handling ---
     
     /**
@@ -67,13 +63,7 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
      */
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission granted, proceed with normal app flow
-                viewModel.readyToNavigateToDailyProgress()
-            } else {
-                // Permission denied, update the ViewModel
-                viewModel.activityPermissionDenied()
-            }
+            viewModel.handlePermissionResult(isGranted)
         }
 
     // --- Lifecycle Methods ---
@@ -116,7 +106,6 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
                 viewModel.navigateToDailyProgress.collect { navigate ->
                     if (navigate) {
                         navigateToDailyProgressFragment()
-                        viewModel.upgradeHomeDestinationMenu()
                     }
                     viewModel.navigationToDailyProgressComplete()
                 }
@@ -132,6 +121,31 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
                     }
                     viewModel.activityPermissionCheckComplete()
                 }
+            }
+        }
+
+        // Observe functionality degradation state
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.degradeHomeFunctionality.collect { isDegraded ->
+                    if (isDegraded) {
+                        binding.permissionDeniedMessageTextview.visibility = View.VISIBLE
+                        binding.retryPermissionButton.visibility = View.VISIBLE
+                        binding.homePlaceholderImageView.visibility = View.GONE
+                    } else {
+                        binding.permissionDeniedMessageTextview.visibility = View.GONE
+                        binding.retryPermissionButton.visibility = View.GONE
+                        binding.homePlaceholderImageView.visibility = View.VISIBLE
+                    }
+                }
+            }
+        }
+
+        binding.retryPermissionButton.setOnClickListener {
+            // Reset relevant states in ViewModel before retrying if necessary
+            // For now, directly call checkActivityPermission
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                checkActivityPermission()
             }
         }
     }
@@ -152,8 +166,17 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
      * Continues with limited app functionality
      */
     override fun onDialogNegativeClick(dialog: DialogFragment) {
-        // Continue with limited functionality when permission is denied
+        viewModel.handlePermissionResult(false)
         permissionDialog.dismiss()
+    }
+
+    /**
+     * Handles dialog dismissal without an explicit positive or negative choice by the user.
+     * This typically occurs if the user taps outside the dialog or presses the back button.
+     * Treats this scenario as a denial of permission for functionality.
+     */
+    override fun onDialogDismissedWithoutExplicitChoice() {
+        viewModel.handlePermissionResult(false)
     }
 
     // --- Helper Methods ---
@@ -172,7 +195,7 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
                 requireContext(),
                 Manifest.permission.ACTIVITY_RECOGNITION
             ) == PackageManager.PERMISSION_GRANTED -> {
-                viewModel.readyToNavigateToDailyProgress()
+                viewModel.handlePermissionResult(true)
             }
             
             // Show rationale if needed before requesting permission
@@ -210,6 +233,7 @@ class PermissionRationaleDialog : DialogFragment() {
 
     /** Listener for dialog button clicks */
     private lateinit var listener: PermissionDialogListener
+    private var explicitChoiceMade: Boolean = false
 
     /**
      * Interface to communicate dialog events back to the host fragment
@@ -220,23 +244,36 @@ class PermissionRationaleDialog : DialogFragment() {
         
         /** Called when user clicks the negative/reject button */
         fun onDialogNegativeClick(dialog: DialogFragment)
+
+        /** Called when the dialog is dismissed without the user making an explicit choice via buttons */
+        fun onDialogDismissedWithoutExplicitChoice()
     }
 
     /**
      * Creates the dialog UI with permission explanation message and buttons
      */
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        explicitChoiceMade = false // Reset flag each time dialog is created
         return context?.let {
             AlertDialog.Builder(it)
                 .setMessage(R.string.permission_rationale_dialog)
                 .setPositiveButton(R.string.permission_dialog_accept) { _, _ ->
+                    explicitChoiceMade = true
                     listener.onDialogPositiveClick(this)
                 }
                 .setNegativeButton(R.string.permission_dialog_reject) { _, _ ->
+                    explicitChoiceMade = true
                     listener.onDialogNegativeClick(this)
                 }
                 .create()
         } ?: throw IllegalStateException("Context cannot be null")
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        if (!explicitChoiceMade) {
+            listener.onDialogDismissedWithoutExplicitChoice()
+        }
     }
 
     /**

@@ -34,7 +34,6 @@
             android:layout_height="match_parent"
             android:layout_marginTop="@dimen/daily_progress_fragment_top_margin"
             app:defaultNavHost="true"
-            app:navGraph="@navigation/nav_graph"
             app:layout_dodgeInsetEdges="bottom"
             tools:layout="@layout/fragment_home_transition" />
 

@@ -20,14 +20,13 @@ import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * Main activity serving as the entry point for the FitStreak application.
- * 
+ *
  * This activity sets up the navigation components, bottom navigation, and handles
  * permission-based functionality changes. It observes permission states from the
  * ViewModel and conditionally degrades or upgrades app features based on activity
@@ -43,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var activityMainBinding: ActivityMainBinding
     private lateinit var bottomNav: BottomNavigationView
     private lateinit var navController: NavController
+    private var navigationInitialized = false // Flag to ensure navigation is set up only once
 
     // Dependency Injection
     @Inject
@@ -54,30 +54,74 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Initializes the activity, sets up navigation, and observes permission-related events.
-     * 
+     *
      * @param savedInstanceState The saved instance state bundle
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Perform dependency injection
         (application as FitApp).appComponent.mainActivityComponent().create().inject(this)
 
         // Set up data binding
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        setupNavigation()
-        checkAuthenticationState()
-        observePermissionEvents()
+        // Initialize NavController early, as it's needed by setupNavigationGraphAndUI
+        val host = supportFragmentManager.findFragmentById(R.id.myNavHostFragment) as NavHostFragment
+        navController = host.navController
+
+        observeAuthenticationAndSetupNavigation()
+    }
+
+    /**
+     * Observes authentication state and sets up navigation graph and UI components accordingly.
+     * This ensures navigation is configured only after the auth state is determined.
+     */
+    private fun observeAuthenticationAndSetupNavigation() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Combine isAuthenticated and userState to get a single emission for auth status
+                authViewModel.isAuthenticated.combine(authViewModel.userState) { isAuthenticated, userState ->
+                    Pair(isAuthenticated, userState.isOnboarded)
+                }.collect { (isAuth, hasOnboarded) ->
+                    // Setup navigation only once with the initial auth state
+                    if (!navigationInitialized) {
+                        Log.d("MainActivity", "Auth state received: isAuthenticated=$isAuth, isOnboarded=$hasOnboarded. Setting up navigation.")
+                        setupNavigationGraphAndUI(isAuth, hasOnboarded)
+                        observePermissionEvents() // Now that NavController and UI are fully set up, observe permission events
+                        navigationInitialized = true
+                    }
+                }
+            }
+        }
     }
 
     /**
      * Sets up the Navigation component with bottom navigation and toolbar.
+     * This method is called once the initial authentication state is known.
      */
-    private fun setupNavigation() {
-        // Get the NavController from the NavHostFragment
-        val host = supportFragmentManager.findFragmentById(R.id.myNavHostFragment) as NavHostFragment
-        navController = host.navController
+    private fun setupNavigationGraphAndUI(isAuthenticated: Boolean, isOnboarded: Boolean) {
+        //Inflate the nav_graph XML and override its startDestination
+        //based on current authentication / onboarding state
+        val graph = navController.navInflater.inflate(R.navigation.nav_graph)
+        graph.setStartDestination(
+            when {
+                !isAuthenticated -> {
+                    Log.d("MainActivity", "Setting start destination to LoginFragment")
+                    R.id.loginFragment
+                }
+                !isOnboarded -> {
+                    Log.d("MainActivity", "Setting start destination to WelcomeFragment")
+                    R.id.welcomeFragment
+                }
+                else -> {
+                    Log.d("MainActivity", "Setting start destination to HomeTransitionFragment")
+                    R.id.homeTransitionFragment
+                }
+            }
+        )
+
+        navController.graph = graph
 
         // Configure top-level destinations for the app bar
         appBarConfiguration = AppBarConfiguration(
@@ -85,7 +129,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.daily_progress_fragment,
                 R.id.recipe_dest,
                 R.id.dashboard_dest,
-                R.id.loginFragment
+                R.id.loginFragment // loginFragment can be a top-level destination if starting there
             )
         )
 
@@ -97,62 +141,20 @@ class MainActivity : AppCompatActivity() {
         // Set up bottom navigation
         bottomNav = activityMainBinding.bottomNavView
         bottomNav.setupWithNavController(navController)
-        
+
         // Hide bottom navigation for authentication screens
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.loginFragment,
                 R.id.welcomeFragment,
-                R.id.goalSelectionFragment -> {
+                R.id.goalSelectionFragment,
+                R.id.homeTransitionFragment -> {
                     bottomNav.visibility = android.view.View.GONE
                     supportActionBar?.hide() //Also hide ActionBar for these screens
                 }
                 else -> {
                     bottomNav.visibility = android.view.View.VISIBLE
                     supportActionBar?.show()
-                }
-            }
-        }
-    }
-    
-    /**
-     * Checks if user is authenticated and navigates accordingly
-     */
-    private fun checkAuthenticationState() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                authViewModel.isAuthenticated.combine(authViewModel.userState) { isAuthenticated, userState ->
-                    Pair(isAuthenticated, userState)
-                }.collect { (isAuthenticated, userState) ->
-                    val currentDestinationId = navController.currentDestination?.id
-                    Log.d("MainActivity", "Auth: $isAuthenticated, Onboarded: ${userState.isOnboarded}, CurrentDest: $currentDestinationId")
-
-                    if (isAuthenticated) {
-                        if (userState.isOnboarded) {
-                            // Authenticated and Onboarded: Navigate to home if on a pre-home screen.
-                            if (currentDestinationId == R.id.loginFragment ||
-                                currentDestinationId == R.id.welcomeFragment ||
-                                currentDestinationId == R.id.goalSelectionFragment) {
-                                Log.d("MainActivity", "Navigating to Daily Progress (Authenticated & Onboarded)")
-                                navController.safeNavigate(R.id.daily_progress_fragment, R.id.loginFragment, true)
-                            }
-                        } else {
-                            // Authenticated but Not Onboarded: Navigate to welcome.
-                            // If on login, or not already in an onboarding screen (and not already welcome/goal).
-                            if (currentDestinationId == R.id.loginFragment ||
-                                (currentDestinationId != R.id.welcomeFragment && currentDestinationId != R.id.goalSelectionFragment)) {
-                                Log.d("MainActivity", "Navigating to Welcome (Authenticated & Not Onboarded)")
-                                navController.safeNavigate(R.id.welcomeFragment, R.id.loginFragment, true)
-                            }
-                        }
-                    } else {
-                        // Not Authenticated: Navigate to login if not already there.
-                        if (currentDestinationId != R.id.loginFragment) {
-                            Log.d("MainActivity", "Navigating to Login (Not Authenticated)")
-                            // Pop up to the graph's start destination to clear the back stack
-                            navController.safeNavigate(R.id.loginFragment, navController.graph.startDestinationId, true)
-                        }
-                    }
                 }
             }
         }
@@ -168,7 +170,11 @@ class MainActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.activityPermissionDenied.collect { permissionDenied ->
                     if (permissionDenied) {
-                        showPermissionDeniedSnackbar()
+                        // Only show Snackbar if not on HomeTransitionFragment,
+                        // as it has its own UI for this.
+                        if (navController.currentDestination?.id != R.id.homeTransitionFragment) {
+                            showPermissionDeniedSnackbar()
+                        }
                     }
                     viewModel.resetActivityPermissionDenied()
                 }
@@ -182,7 +188,6 @@ class MainActivity : AppCompatActivity() {
                     if (degradeHomeFunctionality) {
                         degradeHomeDestinationMenu()
                     }
-                    viewModel.resetHomeDestinationMap()
                 }
             }
         }
@@ -194,7 +199,6 @@ class MainActivity : AppCompatActivity() {
                     if (upgradeHomeFunctionality) {
                         upgradeHomeDestinationMenu()
                     }
-                    viewModel.resetUpgradedHomeDestinationMap()
                 }
             }
         }
@@ -220,7 +224,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Reconfigures the bottom navigation to use the degraded home destination
      * when activity permissions are denied.
-     * 
+     *
      * This redirects users to an alternative experience that doesn't require
      * the denied permission.
      */
@@ -269,7 +273,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * Reconfigures the bottom navigation to use the full-featured home destination
      * when activity permissions are granted.
-     * 
+     *
      * This restores the complete functionality for users who have granted
      * the required permission.
      */
@@ -315,34 +319,3 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
-/**
- * Extension function for NavController to safely navigate, avoiding crashes
- * if the destination is the same or the graph is in transition.
- *
- * @param destinationId The ID of the destination to navigate to.
- * @param popUpToId Optional: The ID of the destination to pop up to.
- * @param popUpToInclusive Whether the popUpToId destination should also be popped.
- */
-fun NavController.safeNavigate(destinationId: Int, popUpToId: Int? = null, popUpToInclusive: Boolean = false) {
-    if (this.currentDestination?.id == destinationId) {
-        Log.d("NavControllerExt", "Already on destination $destinationId. Navigation skipped.")
-        return
-    }
-    try {
-        val options = popUpToId?.let {
-            navOptions {
-                popUpTo(it) { inclusive = popUpToInclusive }
-                launchSingleTop = true // Ensures single top behavior for the destination
-            }
-        }
-        this.navigate(destinationId, null, options)
-    } catch (e: IllegalArgumentException) {
-        // Catch error if destination is unknown or graph is changing
-        Log.e("NavControllerExt", "Safe navigation to $destinationId failed: ${e.message}")
-    } catch (e: IllegalStateException) {
-        // Catch error if NavController is not associated with a NavHostFragment or is in a bad state
-        Log.e("NavControllerExt", "Safe navigation to $destinationId failed with IllegalStateException: ${e.message}")
-    }
-}
-

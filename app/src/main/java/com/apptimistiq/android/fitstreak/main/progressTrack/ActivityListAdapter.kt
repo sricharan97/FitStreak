@@ -1,8 +1,8 @@
 package com.apptimistiq.android.fitstreak.main.progressTrack
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -32,7 +32,6 @@ class ActivityListAdapter(val clickListener: ActivityItemListener) :
 
         /**
          * Binds the activity item data to the view and sets up click handlers.
-         * Updates the motion layout state based on progress percentage.
          *
          * @param clickListener The listener to handle item clicks
          * @param item The activity item data to bind
@@ -41,18 +40,6 @@ class ActivityListAdapter(val clickListener: ActivityItemListener) :
             binding.activityItem = item
             binding.clickListener = clickListener
             binding.executePendingBindings()
-            
-            // Calculate progress percentage for UI transitions
-            val progressNum = item.currentReading.toDouble().div(item.goalReading)
-            val progressPercent = (progressNum * 100).toInt()
-            
-            // Transition motion layout based on progress
-            val motionLayout = binding.root.findViewById(R.id.goal_selection_item_layout) as MotionLayout
-            if (progressPercent >= 100) {
-                motionLayout.transitionToEnd()
-            } else {
-                motionLayout.transitionToStart()
-            }
         }
 
         companion object {

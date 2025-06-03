@@ -57,6 +57,25 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
     //region Permission Management Methods
     /**
+     * Handles the result of the permission request and updates relevant states.
+     *
+     * @param isGranted True if the permission was granted, false otherwise.
+     */
+    fun handlePermissionResult(isGranted: Boolean) {
+        if (isGranted) {
+            _navigateToDailyProgress.value = true
+            _upgradeHomeFunctionality.value = true
+            _degradeHomeFunctionality.value = false
+            _activityPermissionDenied.value = false
+        } else {
+            _navigateToDailyProgress.value = false
+            _degradeHomeFunctionality.value = true
+            _upgradeHomeFunctionality.value = false
+            _activityPermissionDenied.value = true
+        }
+    }
+
+    /**
      * Marks that activity recognition permission is denied by the user
      */
     fun activityPermissionDenied() {
@@ -72,11 +91,10 @@ class MainViewModel @Inject constructor() : ViewModel() {
 
     /**
      * Called when activity permission check has completed
-     * Updates status check flag and degrades home functionality if needed
+     * Updates status check flag
      */
     fun activityPermissionCheckComplete() {
         _activityPermissionStatusCheck.value = false
-        _degradeHomeFunctionality.value = true
     }
     //endregion
 

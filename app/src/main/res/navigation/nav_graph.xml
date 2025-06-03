@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/homeTransitionFragment">
 
     <!-- Authentication flow fragments -->
     <fragment
@@ -12,8 +12,8 @@
         android:label="@string/app_name"
         tools:layout="@layout/custom_login_layout">
         <action
-            android:id="@+id/action_loginFragment_to_daily_progress_fragment"
-            app:destination="@id/daily_progress_fragment"
+            android:id="@+id/action_loginFragment_to_homeTransitionFragment"
+            app:destination="@id/homeTransitionFragment"
             app:launchSingleTop="true"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
@@ -42,8 +42,8 @@
         android:label="fragment_goal_selection"
         tools:layout="@layout/fragment_goal_selection">
         <action
-            android:id="@+id/action_goalSelectionFragment_to_daily_progress_fragment"
-            app:destination="@id/daily_progress_fragment"
+            android:id="@+id/action_goalSelectionFragment_to_homeTransitionFragment"
+            app:destination="@id/homeTransitionFragment"
             app:launchSingleTop="true"
             app:popUpTo="@id/goalSelectionFragment"
             app:popUpToInclusive="true" />
@@ -129,6 +129,18 @@
         <action
             android:id="@+id/action_homeTransitionFragment_to_daily_progress_fragment"
             app:destination="@id/daily_progress_fragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/homeTransitionFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_homeTransitionFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/homeTransitionFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_homeTransitionFragment_to_welcomeFragment"
+            app:destination="@id/welcomeFragment"
             app:launchSingleTop="true"
             app:popUpTo="@id/homeTransitionFragment"
             app:popUpToInclusive="true" />

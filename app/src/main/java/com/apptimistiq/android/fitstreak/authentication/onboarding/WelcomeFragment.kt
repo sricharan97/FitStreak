@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentWelcomeBinding
@@ -64,8 +65,6 @@ class WelcomeFragment : Fragment() {
      * Uses the NavController to navigate via the predefined action.
      */
     private fun navigateToGoalSelection() {
-        findNavController().navigate(
-            WelcomeFragmentDirections.actionWelcomeFragmentToGoalSelectionFragment()
-        )
+        findNavController().navigate( WelcomeFragmentDirections.actionWelcomeFragmentToGoalSelectionFragment())
     }
 }

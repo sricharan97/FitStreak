@@ -236,8 +236,8 @@ class GoalSelectionFragment : Fragment() {
     private fun navigateToHomeDest() {
 
         if (findNavController().currentDestination?.id == R.id.goalSelectionFragment) {
-            Log.d(LOG_TAG, "User is logged in and onboarded. Navigating to daily progress.")
-            findNavController().navigate(R.id.action_goalSelectionFragment_to_daily_progress_fragment)
+            Log.d(LOG_TAG, "User is logged in and onboarded. Navigating to home transition.")
+            findNavController().navigate(GoalSelectionFragmentDirections.actionGoalSelectionFragmentToHomeTransitionFragment())
         }
     }
 }

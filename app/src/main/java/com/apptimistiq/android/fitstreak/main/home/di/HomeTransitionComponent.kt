@@ -1,5 +1,6 @@
 package com.apptimistiq.android.fitstreak.main.home.di
 
+import com.apptimistiq.android.fitstreak.authentication.di.AuthenticationModule
 import com.apptimistiq.android.fitstreak.main.home.HomeTransitionFragment
 import dagger.Subcomponent
 
@@ -10,7 +11,7 @@ import dagger.Subcomponent
  * required by the Home Transition functionality. It is responsible for
  * injecting dependencies into the HomeTransitionFragment.
  */
-@Subcomponent(modules = [HomeTransitionModule::class])
+@Subcomponent(modules = [HomeTransitionModule::class, AuthenticationModule::class])
 interface HomeTransitionComponent {
 
     /**

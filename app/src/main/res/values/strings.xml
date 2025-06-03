@@ -79,5 +79,7 @@
     <string name="edit_water_tag">litres</string>
     <string name="edit_exercise_tag">Calories</string>
     <string name="edit_sleep_tag">hours</string>
+    <string name="activity_permission_denied_transition_message">The essential permission to read and track your Activity information was denied. Do you want to rethink that decision?</string>
+    <string name="retry_permission_button_text">Grant Permission</string>
 
 </resources>
