@@ -57,6 +57,9 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
+    // Add in dependencies section
+    implementation "androidx.core:core-splashscreen:1.0.1"
+
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
 

@@ -70,13 +70,13 @@
     </fragment>
     
     <fragment
-        android:id="@+id/recipe_dest"
+        android:id="@+id/recipeFragment"
         android:name="com.apptimistiq.android.fitstreak.main.recipe.RecipesFragment"
         android:label="@string/recipe_dest_label"
         app:launchSingleTop="true"
         tools:layout="@layout/fragment_recipes" />
     <fragment
-        android:id="@+id/dashboard_dest"
+        android:id="@+id/dashboardFragment"
         android:name="com.apptimistiq.android.fitstreak.main.dashboard.DashboardFragment"
         android:label="@string/dashboard_dest_label"
         app:launchSingleTop="true"
@@ -85,12 +85,12 @@
             android:id="@+id/action_dashboard_dest_to_loginFragment"
             app:destination="@id/loginFragment"
             app:launchSingleTop="true"
-            app:popUpTo="@id/dashboard_dest" 
+            app:popUpTo="@id/dashboardFragment"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_dashboard_dest_to_goalEditFragment"
             app:destination="@id/goalEditFragment"
-            app:popUpTo="@id/dashboard_dest"
+            app:popUpTo="@id/dashboardFragment"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment
@@ -103,7 +103,7 @@
             app:argType="com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo" />
         <action
             android:id="@+id/action_goalEditFragment_to_dashboard_dest"
-            app:destination="@id/dashboard_dest"
+            app:destination="@id/dashboardFragment"
             app:popUpTo="@id/goalEditFragment"
             app:popUpToInclusive="true" />
     </fragment>

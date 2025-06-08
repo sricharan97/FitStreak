@@ -16,10 +16,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.authentication.AuthDataResult
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.FragmentGoalSelectionBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalType
 import com.apptimistiq.android.fitstreak.main.data.domain.UserStateInfo
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -128,27 +130,39 @@ class GoalSelectionFragment : Fragment() {
 
         // Update UserStateInfo to mark onboarding as complete
         viewLifecycleOwner.lifecycleScope.launch {
-            val currentState = viewModel.userState.first() // Get the latest state
-            // isUserLoggedIn should already be true from the login flow.
-            // isOnboarded is the flag we are setting to true here.
-            val updatedUserState = currentState.copy(isOnboarded = true)
-            viewModel.saveUserStateInfo(updatedUserState)
-            Log.d(LOG_TAG, "User state updated to onboarded: true. Waiting for observer to navigate.")
-            // The observer will pick up this change and navigate.
+            val authResult = viewModel.userState.first() // Get the latest state
+            if(authResult is AuthDataResult.Success) {
+                val currentState = authResult.data
+                // isUserLoggedIn should already be true from the login flow.
+                // isOnboarded is the flag we are setting to true here.
+                val updatedUserState = currentState.copy(isOnboarded = true)
+                viewModel.saveUserStateInfo(updatedUserState)
+                Log.d(
+                    LOG_TAG,
+                    "User state updated to onboarded: true. Waiting for observer to navigate."
+                )
+                // The observer will pick up this change and navigate
+            }else {
+                Log.e(LOG_TAG, "Failed to retrieve user state for onboarding completion.")
+            }
         }
     }
 
     private fun observeUserStateForNavigation() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.userState.collect { userState ->
-                    // Check if user is logged in and onboarding is complete
-                    if (userState.isUserLoggedIn && userState.isOnboarded) {
-                        // Ensure navigation happens only once and from this fragment
-                        navigateToHomeDest()
+                viewModel.userState
+                    .filterIsInstance<AuthDataResult.Success<UserStateInfo>>() // Only proceed if Success
+                    .collect { authResult ->
+                        val userState = authResult.data
+                        // Check if user is logged in and onboarding is complete
+                        if (userState.isUserLoggedIn && userState.isOnboarded) {
+                            // Ensure navigation happens only once and from this fragment
+                            navigateToHomeDest()
+                        }
                     }
-                }
             }
+
         }
     }
 

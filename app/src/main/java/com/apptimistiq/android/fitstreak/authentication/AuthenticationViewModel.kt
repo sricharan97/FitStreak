@@ -35,23 +35,26 @@ class AuthenticationViewModel @Inject constructor(
 
     /**
      * StateFlow representing the current user state information.
-     * Initialized eagerly to make it immediately available to the UI.
      */
-    val userState: StateFlow<UserStateInfo> = dataSource.getCurrentUserState().stateIn(
+    val userState: StateFlow<AuthDataResult<UserStateInfo>> = dataSource.getCurrentUserState()
+        .map{ AuthDataResult.Success(it) as AuthDataResult<UserStateInfo> }
+        .catch { emit(AuthDataResult.Error(it)) } // Handle potential errors from the flow
+        .stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = UserStateInfo()
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = AuthDataResult.Loading
     )
 
     /**
      * Check if the user is currently authenticated
      */
-    val isAuthenticated: StateFlow<Boolean> = authDataSource.observeAuthState()
-        .map { it.isUserLoggedIn }
+    val isAuthenticated: StateFlow<AuthDataResult<Boolean>> = authDataSource.observeUserLoginState()
+        .map { AuthDataResult.Success(it) as AuthDataResult<Boolean> }
+        .catch { emit(AuthDataResult.Error(it)) } // Handle potential errors from the flow
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = false
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = AuthDataResult.Loading
         )
 
     /**
@@ -87,7 +90,7 @@ class AuthenticationViewModel @Inject constructor(
      * This consolidates Firebase Auth data with local preferences.
      */
     suspend fun finalizeAuthentication(): UserStateInfo {
-        return authDataSource.finalizeAuthentication()
+        return authDataSource.updateLocalUserAfterLogin()
     }
 
     /**
@@ -106,7 +109,13 @@ class AuthenticationViewModel @Inject constructor(
      */
     fun signOutAndResetData() {
         viewModelScope.launch {
-            authDataSource.signOutAndResetData()
+            authDataSource.signOutAndResetAllUserData()
         }
     }
+}
+
+sealed interface AuthDataResult<out T>{
+    data class Success<out T>(val data: T) : AuthDataResult<T>
+    data class Error(val exception: Throwable) : AuthDataResult<Nothing>
+    data object Loading : AuthDataResult<Nothing>
 }

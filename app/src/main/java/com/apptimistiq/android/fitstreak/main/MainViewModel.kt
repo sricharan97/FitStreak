@@ -51,9 +51,7 @@ class MainViewModel @Inject constructor() : ViewModel() {
     val upgradeHomeFunctionality = _upgradeHomeFunctionality
     //endregion
 
-    init {
-        _activityPermissionStatusCheck.value = true
-    }
+
 
     //region Permission Management Methods
     /**
@@ -73,6 +71,10 @@ class MainViewModel @Inject constructor() : ViewModel() {
             _upgradeHomeFunctionality.value = false
             _activityPermissionDenied.value = true
         }
+    }
+
+    fun activatePermissionStatusCheck() {
+        _activityPermissionStatusCheck.value = true
     }
 
     /**

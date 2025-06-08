@@ -6,12 +6,12 @@
         android:title="@string/home" />
 
     <item
-        android:id="@id/recipe_dest"
+        android:id="@id/recipeFragment"
         android:icon="@drawable/ic_recipe_outline"
         android:title="@string/recipe" />
 
     <item
-        android:id="@id/dashboard_dest"
+        android:id="@id/dashboardFragment"
         android:icon="@drawable/ic_outline_dashboard"
         android:title="@string/dashboard" />
 

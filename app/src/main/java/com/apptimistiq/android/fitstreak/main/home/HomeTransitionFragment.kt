@@ -100,6 +100,8 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel.activatePermissionStatusCheck()
+
         // Observe navigation state changes
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -118,8 +120,9 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
                 viewModel.activityPermissionStatusCheck.collect { check ->
                     if (check) {
                         checkActivityPermission()
+                        viewModel.activityPermissionCheckComplete()
                     }
-                    viewModel.activityPermissionCheckComplete()
+
                 }
             }
         }
@@ -187,7 +190,6 @@ class HomeTransitionFragment : Fragment(), PermissionRationaleDialog.PermissionD
      * - If rationale should be shown, display permission dialog
      * - Otherwise, directly request the permission
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun checkActivityPermission() {
         when {
             // Permission is already granted

@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,53 +16,57 @@ class FirebaseAuthRepository @Inject constructor(
 
     private val firebaseAuth = FirebaseAuth.getInstance()
 
-    override suspend fun getCurrentUser(): FirebaseUser? {
+    override fun getCurrentFirebaseUser(): FirebaseUser? {
         return firebaseAuth.currentUser
     }
 
-    override suspend fun finalizeAuthentication(): UserStateInfo {
-        val firebaseUser = getCurrentUser()
+    override suspend fun updateLocalUserAfterLogin(): UserStateInfo {
+        val firebaseUser = firebaseAuth.currentUser
         val currentUserState = userProfileDataSource.userStateInfo.first()
-        
-        // If we have a Firebase user, update local storage with fresh Firebase data
+
+        // If we have a Firebase user, update local storage with fresh Firebase data,
+        // preserving existing onboarding status.
         val updatedState = firebaseUser?.let { user ->
-            UserStateInfo(
+            currentUserState.copy(
                 uid = user.uid,
-                // Use Firebase display name if available, otherwise keep existing name
+                // Use Firebase display name if available and not blank, otherwise keep existing local name.
                 userName = user.displayName?.takeIf { it.isNotBlank() } ?: currentUserState.userName,
-                isUserLoggedIn = true,
-                isOnboarded = currentUserState.isOnboarded
+                isUserLoggedIn = true
+                // isOnboarded status is preserved from currentUserState
             )
-        } ?: UserStateInfo() // Reset to default if no user
-        
-        // Update local storage with new state
+        } ?: currentUserState.copy(isUserLoggedIn = false) // Fallback if firebaseUser is null after login (should not happen)
+
         userProfileDataSource.updateUserStateInfo(updatedState)
-        return updatedState
+        return updatedState // Return the state that was just saved
     }
 
-    override fun observeAuthState(): Flow<UserStateInfo> {
-        // We're using the local DataStore as source of truth for auth state
-        return userProfileDataSource.userStateInfo
+    override fun observeUserLoginState(): Flow<Boolean> {
+        // The user's login status is derived from the UserStateInfo in local DataStore.
+        return userProfileDataSource.userStateInfo.map { it.isUserLoggedIn }
     }
 
     override suspend fun signOut() {
         firebaseAuth.signOut()
-        // Update local storage to reflect signed out state
+        // Update local storage: mark as not logged in and clear UID.
+        // Other details like username and onboarding status are preserved.
+        val currentUserState = userProfileDataSource.userStateInfo.first()
         userProfileDataSource.updateUserStateInfo(
-            UserStateInfo(isUserLoggedIn = false)
+            currentUserState.copy(isUserLoggedIn = false, uid = "")
         )
     }
 
-    /**
-     * Signs out the currently authenticated user and resets all user data.
-     * This is useful for testing the onboarding and login flow without
-     * having to uninstall the app.
-     */
-    override suspend fun signOutAndResetData() {
+    override suspend fun signOutAndResetAllUserData() {
         firebaseAuth.signOut()
-        userProfileDataSource.resetOnboardingAndGoalData() // Reset goals and user info (height, weight, diet)
+        // Reset fitness goals and user-specific profile data (height, weight, diet).
+        userProfileDataSource.resetOnboardingAndGoalData()
+        // Reset all fields of UserStateInfo to their default, logged-out, non-onboarded values.
         userProfileDataSource.updateUserStateInfo(
-            UserStateInfo(isUserLoggedIn = false, isOnboarded = false, userName = "User", uid = "") // Reset all user state
+            UserStateInfo(
+                uid = "",
+                userName = "User", // Default username
+                isUserLoggedIn = false,
+                isOnboarded = false
+            )
         )
     }
 }

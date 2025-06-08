@@ -2,6 +2,7 @@ package com.apptimistiq.android.fitstreak.main.dashboard
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,9 +17,11 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.authentication.AuthDataResult
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.FragmentDashboardBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,6 +36,9 @@ import javax.inject.Inject
  *
  * Uses Dagger for dependency injection and the MVVM architecture pattern.
  */
+
+private const val LOG_TAG = "DashboardFragment"
+
 class DashboardFragment : Fragment() {
 
     /** Data binding instance for fragment_dashboard.xml layout */
@@ -69,7 +75,10 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Inflate the layout for this fragment
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_dashboard, container, false)
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
         return binding.root
     }
 
@@ -81,19 +90,14 @@ class DashboardFragment : Fragment() {
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.logoutButton.setOnClickListener {
+            authViewModel.signOutAndResetData()
+        }
 
-        setupDataBinding()
         observeNavigationEvents()
-        setupLogoutButton()
+        observeAuthenticationState()
     }
 
-    /**
-     * Configures data binding with lifecycle owner and viewmodel
-     */
-    private fun setupDataBinding() {
-        binding.lifecycleOwner = viewLifecycleOwner
-        binding.viewModel = viewModel
-    }
 
     /**
      * Observes navigation events from the ViewModel to handle navigation to edit goal screen
@@ -115,13 +119,32 @@ class DashboardFragment : Fragment() {
         }
     }
 
+
+    private fun observeAuthenticationState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                authViewModel.isAuthenticated.collect { result ->
+                    if (result is AuthDataResult.Success && !result.data) {
+                        // User is logged out, navigate to login
+                        navigateToLoginDest()
+                    } else if (result is AuthDataResult.Error) {
+                        // Handle error, e.g., show a Snackbar
+                        Snackbar.make(binding.root, "Authentication error", Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+
     /**
-     * Sets up the logout button click listener
+     * Saves the user's onboarding state and navigates to the home screen.
+     * This completes the onboarding flow.
      */
-    private fun setupLogoutButton() {
-        binding.logoutButton.setOnClickListener {
-            authViewModel.signOutAndResetData()
-            // The MainActivity will automatically redirect to login screen based on auth state
+    private fun navigateToLoginDest() {
+
+        if (findNavController().currentDestination?.id == R.id.dashboardFragment) {
+            Log.d(LOG_TAG, "User is logged in and onboarded. Navigating to home transition.")
+            findNavController().navigate(DashboardFragmentDirections.actionDashboardDestToLoginFragment())
         }
     }
 }

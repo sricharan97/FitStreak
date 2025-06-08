@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -16,6 +17,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
+import com.apptimistiq.android.fitstreak.authentication.AuthDataResult
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -23,6 +25,9 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.apptimistiq.android.fitstreak.main.home.SplashViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 
 /**
  * Main activity serving as the entry point for the FitStreak application.
@@ -35,6 +40,10 @@ import javax.inject.Inject
  * @author FitStreak Team
  * @version 1.0
  */
+
+// Helper data class for navigation setup information
+private data class NavSetupInfo(val isAuthenticated: Boolean, val isOnboarded: Boolean, val isReady: Boolean)
+
 class MainActivity : AppCompatActivity() {
 
     // Navigation & UI Components
@@ -50,7 +59,9 @@ class MainActivity : AppCompatActivity() {
 
     // ViewModel instances using the injected factory
     private val viewModel by viewModels<MainViewModel> { viewModelFactory }
-    private val authViewModel by viewModels<AuthenticationViewModel> { viewModelFactory }
+    private val authViewModel by viewModels<AuthenticationViewModel> { viewModelFactory }// Add a ViewModel property to track splash screen state
+    // Add a ViewModel property to track splash screen state
+    private val splashViewModel by viewModels<SplashViewModel>()
 
     /**
      * Initializes the activity, sets up navigation, and observes permission-related events.
@@ -58,10 +69,22 @@ class MainActivity : AppCompatActivity() {
      * @param savedInstanceState The saved instance state bundle
      */
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        // Handle the splash screen transition
+        val splashScreen = installSplashScreen()
+
+
         super.onCreate(savedInstanceState)
 
         // Perform dependency injection
         (application as FitApp).appComponent.mainActivityComponent().create().inject(this)
+
+        // Keep splash screen visible until auth state is determined from the AuthenticationViewModel
+        splashScreen.setKeepOnScreenCondition {
+            val authLoading = authViewModel.isAuthenticated.value is AuthDataResult.Loading
+            val userLoading = authViewModel.userState.value is AuthDataResult.Loading
+            authLoading || userLoading
+        }
 
         // Set up data binding
         activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
@@ -70,31 +93,40 @@ class MainActivity : AppCompatActivity() {
         val host = supportFragmentManager.findFragmentById(R.id.myNavHostFragment) as NavHostFragment
         navController = host.navController
 
-        observeAuthenticationAndSetupNavigation()
+        // Initialize authentication state ASAP
+        initializeAuthState()
     }
 
-    /**
-     * Observes authentication state and sets up navigation graph and UI components accordingly.
-     * This ensures navigation is configured only after the auth state is determined.
-     */
-    private fun observeAuthenticationAndSetupNavigation() {
+    private fun initializeAuthState() {
         lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Combine isAuthenticated and userState to get a single emission for auth status
-                authViewModel.isAuthenticated.combine(authViewModel.userState) { isAuthenticated, userState ->
-                    Pair(isAuthenticated, userState.isOnboarded)
-                }.collect { (isAuth, hasOnboarded) ->
-                    // Setup navigation only once with the initial auth state
-                    if (!navigationInitialized) {
-                        Log.d("MainActivity", "Auth state received: isAuthenticated=$isAuth, isOnboarded=$hasOnboarded. Setting up navigation.")
-                        setupNavigationGraphAndUI(isAuth, hasOnboarded)
-                        observePermissionEvents() // Now that NavController and UI are fully set up, observe permission events
-                        navigationInitialized = true
-                    }
+            // Combine authentication states and capture the result
+            authViewModel.isAuthenticated.combine (authViewModel.userState) { authResult, userStateResult ->
+
+                if(authResult is AuthDataResult.Success && userStateResult is AuthDataResult.Success) {
+                    NavSetupInfo(
+                        isAuthenticated = authResult.data,
+                        isOnboarded = userStateResult.data.isOnboarded,
+                        isReady = true
+                    )
                 }
+                else {
+                    NavSetupInfo(false,false, false) // Default to unauthenticated and uninitialized
+                }
+            } .filter { it.isReady } // Process only when both results are Success
+                .collectLatest { navSetUpInfo ->
+                if (!navigationInitialized) {
+                    Log.d("MainActivity", "Auth state received: isAuthenticated=${navSetUpInfo.isAuthenticated}, isOnboarded=${navSetUpInfo.isOnboarded}, isReady=${navSetUpInfo.isReady}")
+                    setupNavigationGraphAndUI(navSetUpInfo.isAuthenticated, navSetUpInfo.isOnboarded)
+                    observePermissionEvents()
+                    navigationInitialized = true
+                }
+
+
             }
         }
     }
+
+
 
     /**
      * Sets up the Navigation component with bottom navigation and toolbar.
@@ -127,8 +159,8 @@ class MainActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.daily_progress_fragment,
-                R.id.recipe_dest,
-                R.id.dashboard_dest,
+                R.id.recipeFragment,
+                R.id.dashboardFragment,
                 R.id.loginFragment // loginFragment can be a top-level destination if starting there
             )
         )
@@ -175,8 +207,8 @@ class MainActivity : AppCompatActivity() {
                         if (navController.currentDestination?.id != R.id.homeTransitionFragment) {
                             showPermissionDeniedSnackbar()
                         }
+                        viewModel.resetActivityPermissionDenied()
                     }
-                    viewModel.resetActivityPermissionDenied()
                 }
             }
         }
@@ -243,24 +275,24 @@ class MainActivity : AppCompatActivity() {
                     )
                     true
                 }
-                R.id.recipe_dest -> {
+                R.id.recipeFragment -> {
                     navController.navigate(
-                        R.id.recipe_dest,
+                        R.id.recipeFragment,
                         null,
                         navOptions {
                             launchSingleTop = true
-                            popUpTo(R.id.recipe_dest) { inclusive = false }
+                            popUpTo(R.id.recipeFragment) { inclusive = false }
                         }
                     )
                     true
                 }
-                R.id.dashboard_dest -> {
+                R.id.dashboardFragment -> {
                     navController.navigate(
-                        R.id.dashboard_dest,
+                        R.id.dashboardFragment,
                         null,
                         navOptions {
                             launchSingleTop = true
-                            popUpTo(R.id.dashboard_dest) { inclusive = false }
+                            popUpTo(R.id.dashboardFragment) { inclusive = false }
                         }
                     )
                     true
@@ -292,24 +324,24 @@ class MainActivity : AppCompatActivity() {
                     )
                     true
                 }
-                R.id.recipe_dest -> {
+                R.id.recipeFragment -> {
                     navController.navigate(
-                        R.id.recipe_dest,
+                        R.id.recipeFragment,
                         null,
                         navOptions {
                             launchSingleTop = true
-                            popUpTo(R.id.recipe_dest) { inclusive = false }
+                            popUpTo(R.id.recipeFragment) { inclusive = false }
                         }
                     )
                     true
                 }
-                R.id.dashboard_dest -> {
+                R.id.dashboardFragment -> {
                     navController.navigate(
-                        R.id.dashboard_dest,
+                        R.id.dashboardFragment,
                         null,
                         navOptions {
                             launchSingleTop = true
-                            popUpTo(R.id.dashboard_dest) { inclusive = false }
+                            popUpTo(R.id.dashboardFragment) { inclusive = false }
                         }
                     )
                     true
