@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -81,8 +82,14 @@ class LoginFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_login, container, false)
-        return binding.root
+
+        // Return a simple FrameLayout. FirebaseUI will draw over it.
+        val frameLayout = FrameLayout(requireContext())
+        frameLayout.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        return frameLayout
     }
 
     /**
@@ -91,23 +98,11 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupClickListeners()
+        launchSignInFlow()
 
     }
     //endregion
 
-    //region UI Setup
-    /**
-     * Sets up click listeners for UI elements
-     */
-    private fun setupClickListeners() {
-        binding.helloButton.setOnClickListener {
-            launchSignInFlow()
-        }
-    }
-
-
-    //endregion
 
     //region Authentication
     /**
@@ -154,7 +149,7 @@ class LoginFragment : Fragment() {
      */
     private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
-        binding.progressOverlay.visibility = View.VISIBLE // Show loading overlay immediately
+        //binding.progressOverlay.visibility = View.VISIBLE // Show loading overlay immediately
         
         if (result.resultCode == RESULT_OK) {
 
@@ -171,8 +166,6 @@ class LoginFragment : Fragment() {
                 }catch (e:Exception) {
                     Log.e(TAG, "Error in finalizing authentication: ${e.message}")
                     // Handle error (e.g., show a message to the user)
-                } finally {
-                    binding.progressOverlay.visibility = View.GONE
                 }
             }
 
@@ -181,7 +174,7 @@ class LoginFragment : Fragment() {
                 TAG,
                 "Error in Sign in flow with following error code - ${response?.error?.errorCode}"
             )
-            binding.progressOverlay.visibility = View.GONE // Ensure overlay is hidden on failure
+            //binding.progressOverlay.visibility = View.GONE // Ensure overlay is hidden on failure
             // Optionally, show a Snackbar or Toast for the sign-in failure
         }
     }
