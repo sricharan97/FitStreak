@@ -2,10 +2,10 @@
     <!-- Add new splash screen theme -->
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">
         <!-- Set the splash screen background color -->
-        <item name="windowSplashScreenBackground">@color/primary</item>
+        <item name="windowSplashScreenBackground">@color/white</item>
 
         <!-- Use the app icon as the splash screen icon -->
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_fit_streak_logo_v4_adobe</item>
 
         <!-- Optional: animation duration -->
         <item name="windowSplashScreenAnimationDuration">1000</item>

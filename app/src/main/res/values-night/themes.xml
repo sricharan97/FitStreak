@@ -6,7 +6,7 @@
         <item name="windowSplashScreenBackground">@color/primary</item>
 
         <!-- Use the app icon as the splash screen icon -->
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_fit_streak_logo_v4_adobe</item>
 
         <!-- Optional: animation duration -->
         <item name="windowSplashScreenAnimationDuration">1000</item>
@@ -26,7 +26,7 @@
         <item name="colorSecondaryVariant">@color/color3</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor" >?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
