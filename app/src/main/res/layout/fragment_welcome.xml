@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:backgroundTint="@color/primary"
+        android:animateLayoutChanges="true"
         tools:context="com.apptimistiq.android.fitstreak.authentication.onboarding.WelcomeFragment">
 
         <TextView

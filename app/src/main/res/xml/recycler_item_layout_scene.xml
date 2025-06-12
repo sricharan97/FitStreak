@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Initial state - items positioned off-screen -->
+    <ConstraintSet android:id="@+id/start">
+        <Constraint
+            android:id="@+id/goal_selection_item_layout"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginStart="@dimen/daily_progress_item_margin"
+            android:layout_marginTop="@dimen/daily_progress_item_margin"
+            android:layout_marginEnd="@dimen/daily_progress_item_margin"
+            android:alpha="0.4"
+            android:translationX="-200dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </ConstraintSet>
+
+    <!-- End state - items in normal position -->
+    <ConstraintSet android:id="@+id/end">
+        <Constraint
+            android:id="@+id/goal_selection_item_layout"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginStart="@dimen/daily_progress_item_margin"
+            android:layout_marginTop="@dimen/daily_progress_item_margin"
+            android:layout_marginEnd="@dimen/daily_progress_item_margin"
+            android:alpha="1"
+            android:translationX="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </ConstraintSet>
+
+    <!-- Progress-based state for completed goals -->
+    <ConstraintSet android:id="@+id/completed">
+        <Constraint
+            android:id="@+id/goal_selection_item_layout"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginStart="@dimen/daily_progress_item_margin"
+            android:layout_marginTop="@dimen/daily_progress_item_margin"
+            android:layout_marginEnd="@dimen/daily_progress_item_margin"
+            android:alpha="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+            <CustomAttribute
+                app:attributeName="backgroundColor"
+                app:customColorValue="#EAFFEA" /> <!-- Light green background -->
+        </Constraint>
+
+        <Constraint
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="1.1"
+            android:scaleY="1.1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </ConstraintSet>
+
+    <!-- Entry animation transition -->
+    <Transition
+        android:id="@+id/entry_transition"
+        app:constraintSetEnd="@id/end"
+        app:constraintSetStart="@+id/start"
+        app:duration="1000"
+        app:motionInterpolator="easeOut">
+        <!-- First, update your recycler_item_layout_scene.xml completion_transition KeyFrameSet -->
+        <KeyFrameSet>
+            <KeyAttribute
+                android:scaleX="1.1"
+                android:scaleY="1.1"
+                app:framePosition="50"
+                app:motionTarget="@id/progressBar" />
+            <KeyAttribute
+                app:framePosition="25"
+                app:motionTarget="@id/activity_type_icon"
+                android:rotation="45" />
+            <KeyAttribute
+                app:framePosition="50"
+                app:motionTarget="@id/activity_type_icon"
+                android:rotation="0" />
+            <KeyAttribute
+                app:framePosition="75"
+                app:motionTarget="@id/activity_type_icon"
+                android:rotation="-45" />
+            <KeyAttribute
+                app:framePosition="100"
+                app:motionTarget="@id/activity_type_icon"
+                android:rotation="0" />
+        </KeyFrameSet>
+    </Transition>
+
+    <!-- Completion animation transition -->
+    <Transition
+        android:id="@+id/completion_transition"
+        app:constraintSetEnd="@id/completed"
+        app:constraintSetStart="@+id/end"
+        app:duration="1000">
+        <KeyFrameSet>
+            <KeyAttribute
+                app:framePosition="50"
+                app:motionTarget="@id/progressBar"
+                android:scaleX="1.2"
+                android:scaleY="1.2" />
+        </KeyFrameSet>
+    </Transition>
+</MotionScene>

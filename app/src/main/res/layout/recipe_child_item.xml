@@ -21,6 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/recipe_child_item_margin"
         android:elevation="8dp"
+        android:animateLayoutChanges="true"
         android:onClick="@{() -> clickListener.onClick(recipe)}"
         app:cardCornerRadius="4dp">
 

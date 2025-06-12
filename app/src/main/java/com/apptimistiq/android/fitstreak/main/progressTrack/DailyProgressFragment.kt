@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.databinding.FragmentDailyProgressBinding
@@ -660,4 +661,6 @@ class DailyProgressFragment : Fragment() {
     }
 
     // endregion
+
+
 }

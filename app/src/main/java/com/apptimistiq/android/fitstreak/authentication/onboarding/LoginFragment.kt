@@ -8,18 +8,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.apptimistiq.android.fitstreak.FitApp
 import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
-import com.apptimistiq.android.fitstreak.databinding.FragmentLoginBinding
 import com.firebase.ui.auth.AuthMethodPickerLayout
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -41,8 +37,7 @@ import javax.inject.Inject
 class LoginFragment : Fragment() {
 
     //region Properties
-    /** View binding for the login fragment layout */
-    private lateinit var binding: FragmentLoginBinding
+
 
     /** ViewModel factory provided by Dagger DI */
     @Inject

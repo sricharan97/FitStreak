@@ -16,6 +16,7 @@
         android:id="@+id/progress_coordinator_layout_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
         tools:context="com.apptimistiq.android.fitstreak.main.progressTrack.DailyProgressFragment">
 
         <!-- TODO: Modify the recyclerview layout -->

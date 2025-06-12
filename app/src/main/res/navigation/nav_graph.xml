@@ -20,6 +20,9 @@
         <action
             android:id="@+id/action_loginFragment_to_welcomeFragment"
             app:destination="@id/welcomeFragment"
+            app:enterAnim="@android:anim/fade_in"
+            app:exitAnim="@android:anim/fade_out"
+            app:launchSingleTop="true"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
@@ -32,6 +35,7 @@
         <action
             android:id="@+id/action_welcomeFragment_to_goalSelectionFragment"
             app:destination="@id/goalSelectionFragment"
+            app:launchSingleTop="true"
             app:popUpTo="@id/welcomeFragment"
             app:popUpToInclusive="true" />
     </fragment>
@@ -64,6 +68,8 @@
         <action
             android:id="@+id/action_home_dest_to_editActivityFragment"
             app:destination="@id/editActivityFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
             app:launchSingleTop="true"
             app:popUpTo="@id/daily_progress_fragment"
             app:popUpToInclusive="false" />
@@ -118,6 +124,7 @@
         <action
             android:id="@+id/action_editActivityFragment_to_home_dest"
             app:destination="@id/daily_progress_fragment"
+            app:enterAnim="@android:anim/slide_in_left"
             app:launchSingleTop="true"
             app:popUpTo="@id/editActivityFragment"
             app:popUpToInclusive="true" />
@@ -129,6 +136,7 @@
         <action
             android:id="@+id/action_homeTransitionFragment_to_daily_progress_fragment"
             app:destination="@id/daily_progress_fragment"
+            app:enterAnim="@android:anim/fade_in"
             app:launchSingleTop="true"
             app:popUpTo="@id/homeTransitionFragment"
             app:popUpToInclusive="true" />

@@ -2,6 +2,7 @@ package com.apptimistiq.android.fitstreak.utils
 
 import android.widget.ImageView
 import android.widget.ProgressBar
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.databinding.BindingAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.apptimistiq.android.fitstreak.R
@@ -113,4 +114,32 @@ fun bindGoalProgress(progressBar: ProgressBar, activityItemUiState: ActivityItem
     val progressRatio = activityItemUiState.currentReading.toDouble() / activityItemUiState.goalReading
     val progressPercent = (progressRatio * 100).toInt()
     progressBar.progress = progressPercent
+}
+
+@BindingAdapter("animateProgress")
+fun animateProgress(view: MotionLayout, activityItem: ActivityItemUiState) {
+    // First ensure we're at the start state
+    if (view.currentState != view.startState) {
+        view.transitionToState(view.startState)
+    }
+
+    // Run entry animation with a slight delay
+    view.postDelayed({
+        view.transitionToState(R.id.end)
+
+        // Check for completion after entry animation finishes
+        view.setTransitionListener(object : MotionLayout.TransitionListener {
+            override fun onTransitionCompleted(motionLayout: MotionLayout, currentId: Int) {
+                if (currentId == R.id.end &&
+                    activityItem.currentReading >= activityItem.goalReading) {
+                    // Goal is met, trigger completion animation
+                    motionLayout.transitionToState(R.id.completed)
+                }
+            }
+
+            override fun onTransitionChange(motionLayout: MotionLayout, startId: Int, endId: Int, progress: Float) {}
+            override fun onTransitionStarted(motionLayout: MotionLayout, startId: Int, endId: Int) {}
+            override fun onTransitionTrigger(motionLayout: MotionLayout, triggerId: Int, positive: Boolean, progress: Float) {}
+        })
+    }, 100)
 }
