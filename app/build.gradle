@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:$nav_version")
     implementation("androidx.navigation:navigation-ui-ktx:$nav_version")
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
     // Add in dependencies section
     implementation "androidx.core:core-splashscreen:1.0.1"

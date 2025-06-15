@@ -71,8 +71,6 @@ class RecipesFragment : Fragment() {
             container, false
         )
 
-        setHasOptionsMenu(true)
-
         return binding.root
     }
 
@@ -84,6 +82,7 @@ class RecipesFragment : Fragment() {
 
         setupDataBinding()
         setupRecyclerView()
+        setupChips()
         observeViewModel()
     }
 
@@ -110,6 +109,38 @@ class RecipesFragment : Fragment() {
         binding.recipeParentRecyclerView.adapter = recyclerAdapter
     }
 
+    private fun setupChips() {
+        // Set chip click listeners
+        binding.chipVegetarian.setOnClickListener {
+            viewModel.updateMenuDietType(RecipeDietType.Vegetarian)
+        }
+
+        binding.chipVegan.setOnClickListener {
+            viewModel.updateMenuDietType(RecipeDietType.Vegan)
+        }
+
+        binding.chipPaleo.setOnClickListener {
+            viewModel.updateMenuDietType(RecipeDietType.Paleo)
+        }
+
+        binding.chipKeto.setOnClickListener {
+            viewModel.updateMenuDietType(RecipeDietType.Keto)
+        }
+
+
+    }
+
+    private fun updateSelectedChip(dietType: String) {
+        with(binding) {
+            chipVegetarian.isChecked = dietType == recipeTypeMap[RecipeDietType.Vegetarian]
+            chipVegan.isChecked = dietType == recipeTypeMap[RecipeDietType.Vegan]
+            chipPaleo.isChecked = dietType == recipeTypeMap[RecipeDietType.Paleo]
+            chipKeto.isChecked = dietType == recipeTypeMap[RecipeDietType.Keto]
+        }
+    }
+
+
+
     /**
      * Observes view model state for navigation events
      */
@@ -119,6 +150,29 @@ class RecipesFragment : Fragment() {
                 viewModel.recipeUrl.collect { recipeUrl ->
                     recipeUrl?.let {
                         openRecipeInBrowser(it)
+                    }
+                }
+            }
+        }
+
+
+        // Observe diet type changes for chip selection
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentDietType.collect { dietType ->
+                    updateSelectedChip(dietType)
+                }
+            }
+        }
+
+        // Observe loading state to control shimmer
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isLoading.collect { isLoading ->
+                    if (isLoading) {
+                        binding.shimmerLayout.startShimmer()
+                    } else {
+                        binding.shimmerLayout.stopShimmer()
                     }
                 }
             }
@@ -139,38 +193,5 @@ class RecipesFragment : Fragment() {
 
     // region Menu Handling
 
-    /**
-     * Inflates the options menu for diet filtering
-     */
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.recipe_diet_menu, menu)
-        super.onCreateOptionsMenu(menu, inflater)
-    }
 
-    /**
-     * Handles selection of diet type filter options
-     */
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.vegetarian_diet -> {
-                viewModel.updateMenuDietType(RecipeDietType.Vegetarian)
-                true
-            }
-            R.id.vegan_diet -> {
-                viewModel.updateMenuDietType(RecipeDietType.Vegan)
-                true
-            }
-            R.id.paleo_diet -> {
-                viewModel.updateMenuDietType(RecipeDietType.Paleo)
-                true
-            }
-            R.id.keto_diet -> {
-                viewModel.updateMenuDietType(RecipeDietType.Keto)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    // endregion
 }

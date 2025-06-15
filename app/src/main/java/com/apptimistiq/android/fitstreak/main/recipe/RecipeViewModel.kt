@@ -29,6 +29,27 @@ enum class MealType {
     Salad,
     MainCourse
 }
+/**
+ * Maps the RecipeDietType enum to API-compatible string values.
+ */
+val recipeTypeMap = mapOf(
+    RecipeDietType.Vegetarian to "Vegetarian",
+    RecipeDietType.Keto to "Ketogenic",
+    RecipeDietType.Paleo to "Paleo",
+    RecipeDietType.Vegan to "Vegan"
+)
+
+
+/**
+ * Maps the MealType enum to API-compatible string values.
+ */
+val mealTypeMap = mapOf(
+    MealType.Breakfast to "breakfast",
+    MealType.Dessert to "dessert",
+    MealType.Salad to "salad",
+    MealType.Snack to "snack",
+    MealType.MainCourse to "main course"
+)
 
 /**
  * ViewModel responsible for managing recipe data and user interactions.
@@ -44,26 +65,7 @@ class RecipeViewModel @Inject constructor(
     private val recipeRemoteDataSource: RecipeRemoteDataSource
 ) : ViewModel() {
 
-    /**
-     * Maps the RecipeDietType enum to API-compatible string values.
-     */
-    private val recipeTypeMap = mapOf(
-        RecipeDietType.Vegetarian to "Vegetarian",
-        RecipeDietType.Keto to "Ketogenic",
-        RecipeDietType.Paleo to "Paleo",
-        RecipeDietType.Vegan to "Vegan"
-    )
 
-    /**
-     * Maps the MealType enum to API-compatible string values.
-     */
-    private val mealTypeMap = mapOf(
-        MealType.Breakfast to "breakfast",
-        MealType.Dessert to "dessert",
-        MealType.Salad to "salad",
-        MealType.Snack to "snack",
-        MealType.MainCourse to "main course"
-    )
 
     /**
      * StateFlow that tracks the currently selected recipe diet type.
@@ -74,6 +76,16 @@ class RecipeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = recipeTypeMap[RecipeDietType.Vegetarian]!!
         )
+
+    // Add loading state
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    /**
+     * Publicly exposed StateFlow for current diet type
+     */
+    val currentDietType: StateFlow<String> = _menuItemSelection
+
 
     /**
      * Keeps track of the currently selected recipe ID for detailed view.
@@ -134,6 +146,8 @@ class RecipeViewModel @Inject constructor(
         snackRecipes,
         saladRecipes
     ) { bR: RecipeTrackUiState, mR: RecipeTrackUiState, sR: RecipeTrackUiState, nR: RecipeTrackUiState ->
+        // Set loading to false when data is available
+        _isLoading.value = false
         listOf(bR, mR, sR, nR)
     }.stateIn(
         scope = viewModelScope,
@@ -148,6 +162,7 @@ class RecipeViewModel @Inject constructor(
      */
     fun updateMenuDietType(diet: RecipeDietType) {
         viewModelScope.launch {
+            _isLoading.value = true
             recipeRemoteDataSource.updateRecipeDietType(recipeTypeMap[diet]!!)
         }
     }
