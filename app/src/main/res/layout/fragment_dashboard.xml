@@ -19,7 +19,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
+        android:layout_marginTop="?attr/actionBarSize"
         tools:context="com.apptimistiq.android.fitstreak.main.dashboard.DashboardFragment">
+
+        <TextView
+            android:id="@+id/profile_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/circle_avatar_background"
+            android:gravity="center"
+            android:text="@{viewModel.userInitialsState}"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:elevation="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/user_info_card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="JS" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/user_info_card"
@@ -30,11 +49,13 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.0">
+            app:layout_constraintVertical_bias="0.2">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
+
 
                 <TextView
                     android:id="@+id/dashboard_title_text"
@@ -410,6 +431,7 @@
 
 
         </androidx.cardview.widget.CardView>
+
 
         <Button
             android:id="@+id/logout_button"

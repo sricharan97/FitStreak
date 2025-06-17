@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.times
 
 /**
  * Constants for goal selection limits
@@ -121,12 +122,17 @@ class GoalSelectionFragment : Fragment() {
     }
 
     private fun saveGoalsAndMarkOnboardingComplete() {
+
+        // Calculate the actual values from picker indices
+        val stepValue = (binding.stepCountPicker.value * 100) + 1000
+        val exerciseValue = (binding.exerciseCalPicker.value * 50) + 50
+
         // Save individual goals
         // Ensure GoalType enum values (STEPS, WATER, SLEEP, EXERCISE) are correct
-        viewModel.saveGoal(GoalType.STEP, binding.stepCountPicker.value)
+        viewModel.saveGoal(GoalType.STEP, stepValue)
         viewModel.saveGoal(GoalType.WATER, binding.waterGlassPicker.value)
         viewModel.saveGoal(GoalType.SLEEP, binding.sleepHourPicker.value)
-        viewModel.saveGoal(GoalType.EXERCISE, binding.exerciseCalPicker.value)
+        viewModel.saveGoal(GoalType.EXERCISE, exerciseValue)
 
         // Update UserStateInfo to mark onboarding as complete
         viewLifecycleOwner.lifecycleScope.launch {

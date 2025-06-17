@@ -78,6 +78,17 @@ class DashboardViewModel @Inject constructor(
         initialValue = GoalPreferences()
     )
 
+    val userInitialsState: StateFlow<String> = dataSource.getCurrentUserState()
+        .map { userState ->
+            getInitialsFromName(userState.userName)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
+
+
     /**
      * Flow of current user information preferences.
      */
@@ -175,6 +186,21 @@ class DashboardViewModel @Inject constructor(
             dataSource.saveGoalInfo(_currentEditInfoType.value, _displayedGoalValue.value)
         }
         navigateBackDashboardFragment()
+    }
+    /**
+     * Generates initials from the user's full name.
+     * Returns up to 2 characters representing the user's initials.
+     *
+     * @param fullName The user's full name
+     * @return String containing the user's initials
+     */
+    fun getInitialsFromName(fullName: String): String {
+        if (fullName.isBlank()) return "NA"
+
+        return fullName.split(" ")
+            .filter { it.isNotBlank() }
+            .take(2)
+            .joinToString("") { it.first().uppercase() }
     }
     //endregion
 }
