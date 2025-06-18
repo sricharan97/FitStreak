@@ -40,7 +40,7 @@ interface ActivityDao {
      * @return A Flow emitting a list of activity records from the past week
      */
     @Query(
-        "SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') BETWEEN date('now','localtime','-7 days') AND " +
+        "SELECT * FROM activity_store WHERE date(date_of_activity,'unixepoch','localtime') BETWEEN date('now','localtime','-6 days') AND " +
                 "date('now','localtime') order by date_of_activity Asc"
     )
     fun getWeekActivities(): Flow<List<Activity>>

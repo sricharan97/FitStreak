@@ -81,5 +81,12 @@
     <string name="edit_sleep_tag">hours</string>
     <string name="activity_permission_denied_transition_message">The essential permission to read and track your Activity information was denied. Do you want to rethink that decision?</string>
     <string name="retry_permission_button_text">Grant Permission</string>
+    <string name="sleep">Sleep</string>
+    <string name="exercise">Exercise</string>
+    <string name="logout">Logout from the app</string>
+    <string name="weekly_dashboard">Weekly Dashboard</string>
+    <string name="steps">Steps</string>
+    <string name="water">Water</string>
+    <string name="edit_goal_desc">Button for editing your goal value</string>
 
 </resources>

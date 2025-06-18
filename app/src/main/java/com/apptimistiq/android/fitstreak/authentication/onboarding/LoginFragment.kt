@@ -165,12 +165,17 @@ class LoginFragment : Fragment() {
             }
 
         } else {
-            Log.e(
-                TAG,
-                "Error in Sign in flow with following error code - ${response?.error?.errorCode}"
-            )
-            //binding.progressOverlay.visibility = View.GONE // Ensure overlay is hidden on failure
-            // Optionally, show a Snackbar or Toast for the sign-in failure
+            // This block is executed when the user presses the back button from the
+            // sign-in screen or if there is an error.
+            Log.w(TAG, "Sign-in failed or was cancelled. Error code: ${response?.error?.errorCode}")
+
+            // To prevent showing the blank LoginFragment, we attempt to pop the back stack.
+            val popped = findNavController().popBackStack()
+            // If popBackStack() returns false, it means this was the last fragment on the stack.
+            // In this case, we should finish the activity to exit the app.
+            if (!popped) {
+                requireActivity().finish()
+            }
         }
     }
     //endregion

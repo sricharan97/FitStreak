@@ -21,9 +21,17 @@ import com.apptimistiq.android.fitstreak.authentication.AuthDataResult
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.FragmentDashboardBinding
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.text.toFloat
 
 /**
  * Dashboard Fragment that serves as the main screen displaying user fitness information and goals.
@@ -91,11 +99,12 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.logoutButton.setOnClickListener {
-            authViewModel.signOutAndResetData()
+            authViewModel.signOut()
         }
 
         observeNavigationEvents()
         observeAuthenticationState()
+        setupCharts()
     }
 
 
@@ -135,6 +144,173 @@ class DashboardFragment : Fragment() {
             }
         }
     }
+
+    /**
+     * Sets up all bar charts with data from the ViewModel
+     */
+    private fun setupCharts() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.weeklyActivities.collect { activities ->
+                    if (activities.isNotEmpty()) {
+                        setupStepsChart()
+                        setupWaterChart()
+                        setupExerciseChart()
+                        setupSleepChart()
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets up the steps chart with data
+     */
+    private fun setupStepsChart() {
+        val stepsChart = binding.stepsChart
+        configureBarChart(stepsChart)
+
+        val stepsData = viewModel.getStepsData()
+        val entries = stepsData.mapIndexed { index, (_, steps) ->
+            BarEntry(index.toFloat(), steps)
+        }
+
+        val dataSet = BarDataSet(entries, "Steps").apply {
+            color = resources.getColor(R.color.primary, requireContext().theme)
+            valueTextSize = 10f
+
+        }
+
+        val data = BarData(dataSet)
+        stepsChart.data = data
+
+        // Set X-axis labels
+        stepsChart.xAxis.valueFormatter = IndexAxisValueFormatter(stepsData.map { it.first })
+
+        // Refresh chart
+        stepsChart.invalidate()
+    }
+
+    /**
+     * Sets up the water intake chart with data
+     */
+    private fun setupWaterChart() {
+        val waterChart = binding.waterChart
+        configureBarChart(waterChart)
+
+        val waterData = viewModel.getWaterData()
+        val entries = waterData.mapIndexed { index, (_, glasses) ->
+            BarEntry(index.toFloat(), glasses)
+        }
+
+        val dataSet = BarDataSet(entries, "Water Glasses").apply {
+            color = resources.getColor(R.color.primary, requireContext().theme)
+            valueTextSize = 10f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return value.toInt().toString()
+                }
+            }
+
+        }
+
+        val data = BarData(dataSet)
+        waterChart.data = data
+
+        waterChart.xAxis.valueFormatter = IndexAxisValueFormatter(waterData.map { it.first })
+        waterChart.invalidate()
+    }
+
+    /**
+     * Sets up the exercise chart with data
+     */
+    private fun setupExerciseChart() {
+        val exerciseChart = binding.exerciseChart
+        configureBarChart(exerciseChart)
+
+        val exerciseData = viewModel.getExerciseData()
+        val entries = exerciseData.mapIndexed { index, (_, calories) ->
+            BarEntry(index.toFloat(), calories)
+        }
+
+        val dataSet = BarDataSet(entries, "Exercise Calories").apply {
+            color = resources.getColor(R.color.primary, requireContext().theme)
+            valueTextSize = 10f
+
+        }
+
+        val data = BarData(dataSet)
+        exerciseChart.data = data
+
+        exerciseChart.xAxis.valueFormatter = IndexAxisValueFormatter(exerciseData.map { it.first })
+        exerciseChart.invalidate()
+    }
+
+    /**
+     * Sets up the sleep chart with data
+     */
+    private fun setupSleepChart() {
+        val sleepChart = binding.sleepChart
+        configureBarChart(sleepChart)
+
+        val sleepData = viewModel.getSleepData()
+        val entries = sleepData.mapIndexed { index, (_, hours) ->
+            BarEntry(index.toFloat(), hours)
+        }
+
+        val dataSet = BarDataSet(entries, "Sleep Hours").apply {
+            color = resources.getColor(R.color.primary, requireContext().theme)
+            valueTextSize = 10f
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return value.toInt().toString()
+                }
+            }
+        }
+
+        val data = BarData(dataSet)
+        sleepChart.data = data
+
+        sleepChart.xAxis.valueFormatter = IndexAxisValueFormatter(sleepData.map { it.first })
+        sleepChart.invalidate()
+    }
+
+    /**
+     * Configures common chart styling options
+     */
+    private fun configureBarChart(chart: BarChart) {
+        chart.apply {
+            description.isEnabled = false
+            legend.isEnabled = false
+            setDrawGridBackground(false)
+            setDrawBarShadow(false)
+            setDrawValueAboveBar(true)
+
+            // X-axis styling
+            xAxis.apply {
+                setDrawGridLines(false)
+                position = XAxis.XAxisPosition.BOTTOM
+                granularity = 1f
+                isGranularityEnabled = true
+                setDrawAxisLine(true)
+            }
+
+            // Y-axis styling
+            axisLeft.apply {
+                setDrawGridLines(true)
+                setDrawZeroLine(true)
+                setDrawAxisLine(true)
+            }
+
+            axisRight.isEnabled = false
+
+            // Animation
+            animateY(1000)
+        }
+    }
+
+
+
 
     /**
      * Saves the user's onboarding state and navigates to the home screen.

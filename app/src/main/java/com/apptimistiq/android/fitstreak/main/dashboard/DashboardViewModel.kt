@@ -1,20 +1,26 @@
 package com.apptimistiq.android.fitstreak.main.dashboard
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
+import com.apptimistiq.android.fitstreak.main.data.database.Activity
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalPreferences
 import com.apptimistiq.android.fitstreak.main.data.domain.GoalUserInfo
 import com.apptimistiq.android.fitstreak.main.data.domain.UserInfoPreferences
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
-private const val LOG_TAG = "ProgressViewModel"
+private const val LOG_TAG = "DashboardViewModel"
 
 /**
  * ViewModel for the Dashboard screen that handles user goals and information.
- * 
+ *
  * This ViewModel is responsible for:
  * - Retrieving and displaying current user goals and info
  * - Handling goal editing interactions
@@ -25,157 +31,169 @@ class DashboardViewModel @Inject constructor(
     private val dataSource: ActivityDataSource
 ) : ViewModel() {
 
-    //region Navigation State
-    
+    //region Data Streams
+
+    /**
+     * StateFlow that emits the current user's fitness goals.
+     * It is backed by a data source and shared across the ViewModel's scope.
+     */
+    val goals: StateFlow<GoalPreferences?> = dataSource.getCurrentGoals().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null
+    )
+
+    val userInitialsState: StateFlow<String> = dataSource.getCurrentUserState()
+        .map { getInitialsFromName(it.userName) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = "NA"
+        )
+
+
+
+
+    // Weekly activities data
+    private val _weeklyActivities = MutableStateFlow<List<Activity>>(emptyList())
+    val weeklyActivities: StateFlow<List<Activity>> = _weeklyActivities
+
+    // Loading state
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    // Error state
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    //endregion
+
+    //region Navigation and Editing State
+
     private val _navigateToEditGoal = MutableStateFlow(GoalUserInfo.DEFAULT)
     val navigateToEditGoal: StateFlow<GoalUserInfo> = _navigateToEditGoal
 
     private val _navigateBackToDashboard = MutableStateFlow(false)
     val navigateBackToDashboard: StateFlow<Boolean> = _navigateBackToDashboard
-    
+
+    private val _currentEditInfoType = MutableStateFlow(GoalUserInfo.DEFAULT)
     /**
-     * Triggers navigation to goal editing screen for the specified goal type.
-     * 
-     * @param goal_info_type The type of goal or user info to edit
+     * StateFlow that provides the current value for the goal or user info being edited.
+     * It dynamically switches its data source based on the type of information being edited.
+     */
+    val goalInfoVal: StateFlow<Int> = _currentEditInfoType.flatMapLatest { goalUserInfoType ->
+        dataSource.getCurrentGoalUserInfo(goalUserInfoType)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = 0
+    )
+
+    private val _displayedGoalValue = MutableStateFlow(0)
+    val displayedGoalValue: StateFlow<Int> = _displayedGoalValue
+
+    private val currentIncrDcrVal = MutableStateFlow(0)
+    //endregion
+
+    init {
+        fetchWeeklyActivities()
+    }
+
+    private fun fetchWeeklyActivities() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            dataSource.getWeekActivities()
+                .catch { e ->
+                    _error.value = "Failed to load weekly activities: ${e.message}"
+                    Log.e(LOG_TAG, "Error fetching weekly activities", e)
+                }
+                .collect { activities ->
+                    _weeklyActivities.value = activities
+                    _isLoading.value = false
+                }
+        }
+    }
+
+
+    //region Navigation and Editing Functions
+
+    /**
+     * Initiates navigation to the goal editing screen for a specific goal type.
+     *
+     * @param goal_info_type The type of goal or user info to be edited
      */
     fun navigateEditGoal(goal_info_type: GoalUserInfo) {
-        _navigateToEditGoal.update {
-            goal_info_type
-        }
         updateCurrentEditInfoType(goal_info_type)
+        _navigateToEditGoal.update { goal_info_type }
     }
 
     /**
-     * Resets navigation state after navigation to edit screen is complete.
+     * Updates the internal state to reflect the current type of goal being edited.
+     *
+     * @param goal_info_type The type of goal or user info being edited
+     */
+    private fun updateCurrentEditInfoType(goal_info_type: GoalUserInfo) {
+        _currentEditInfoType.update { goal_info_type }
+    }
+
+    /**
+     * Resets the navigation trigger after navigation to the edit screen has occurred.
      */
     fun navigateToEditGoalCompleted() {
         _navigateToEditGoal.update { GoalUserInfo.DEFAULT }
     }
 
     /**
-     * Triggers navigation back to dashboard after changes are saved.
+     * Triggers navigation back to the dashboard screen.
      */
     private fun navigateBackDashboardFragment() {
         _navigateBackToDashboard.update { true }
     }
 
     /**
-     * Resets navigation state after returning to dashboard is complete.
+     * Updates the displayed value for the goal being edited.
+     *
+     * @param value The new value to be displayed
+     */
+    fun updateDisplayedGoalInfoVal(value: Int) {
+        _displayedGoalValue.update { value }
+    }
+
+    /**
+     * Increments the value of the goal being edited based on its type.
+     */
+    fun incrementGoalInfoValue() {
+        currentIncrDcrVal.update {
+            when (_currentEditInfoType.value) {
+                GoalUserInfo.STEPS -> 500
+                GoalUserInfo.EXERCISE -> 50
+                else -> 1
+            }
+        }
+        _displayedGoalValue.update { it + currentIncrDcrVal.value }
+    }
+
+    /**
+     * Decrements the value of the goal being edited, ensuring it doesn't go below zero.
+     */
+    fun decrementGoalInfoValue() {
+        currentIncrDcrVal.update {
+            when (_currentEditInfoType.value) {
+                GoalUserInfo.STEPS -> 500
+                GoalUserInfo.EXERCISE -> 50
+                else -> 1
+            }
+        }
+        _displayedGoalValue.update { (it - currentIncrDcrVal.value).coerceAtLeast(0) }
+    }
+
+    /**
+     * Resets the navigation trigger after returning to the dashboard.
      */
     fun navigateBackDashboardFragmentComplete() {
         _navigateBackToDashboard.update { false }
     }
     //endregion
-
-    //region Data Streams
-    
-    /**
-     * Flow of current user goal preferences.
-     */
-    val goals: StateFlow<GoalPreferences?> = dataSource.getCurrentGoals().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = GoalPreferences()
-    )
-
-    val userInitialsState: StateFlow<String> = dataSource.getCurrentUserState()
-        .map { userState ->
-            getInitialsFromName(userState.userName)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = ""
-        )
-
-
-    /**
-     * Flow of current user information preferences.
-     */
-    val userInfo: StateFlow<UserInfoPreferences> = dataSource.getCurrentUserInfo().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = UserInfoPreferences(168, 60)
-    )
-    //endregion
-
-    //region Goal Editing State
-    
-    private val _currentEditInfoType = MutableStateFlow(GoalUserInfo.DEFAULT)
-    private val currentIncrDcrVal = MutableStateFlow(0)
-    
-    private val _displayedGoalValue = MutableStateFlow(0)
-    val displayedGoalValue: StateFlow<Int> = _displayedGoalValue
-
-    /**
-     * Flow of the current value for the goal type being edited.
-     * Changes based on the selected goal type.
-     */
-    val goalInfoVal: StateFlow<Int> = _currentEditInfoType.flatMapLatest { goalUserInfoType ->
-        dataSource.getCurrentGoalUserInfo(goalUserInfoType)
-    }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0
-        )
-    
-    /**
-     * Updates the currently selected goal/info type and sets the appropriate increment/decrement step value.
-     *
-     * @param goal_info_type The type of goal or user info being edited
-     */
-    private fun updateCurrentEditInfoType(goal_info_type: GoalUserInfo) {
-        _currentEditInfoType.update {
-            goal_info_type
-        }
-        // Set the increment/decrement step based on the type of goal
-        when (goal_info_type) {
-            // Smaller increments for height, weight, water, and sleep metrics
-            GoalUserInfo.SLEEP, GoalUserInfo.HEIGHT, GoalUserInfo.WATER,
-            GoalUserInfo.WEIGHT -> {
-                currentIncrDcrVal.update { 1 }
-            }
-            // Larger increments for steps and exercise duration
-            GoalUserInfo.STEPS, GoalUserInfo.EXERCISE -> {
-                currentIncrDcrVal.update { 500 }
-            }
-            else -> {
-                currentIncrDcrVal.update { 0 }
-            }
-        }
-    }
-
-    /**
-     * Updates the displayed goal value being edited.
-     *
-     * @param value The new value to display
-     */
-    fun updateDisplayedGoalInfoVal(value: Int) {
-        _displayedGoalValue.update {
-            value
-        }
-    }
-
-    /**
-     * Increases the displayed goal value by the current increment step.
-     */
-    fun incrementGoalInfoValue() {
-        _displayedGoalValue.update {
-            it + currentIncrDcrVal.value
-        }
-    }
-
-    /**
-     * Decreases the displayed goal value by the current decrement step.
-     */
-    fun decrementGoalInfoValue() {
-        _displayedGoalValue.update {
-            it - currentIncrDcrVal.value
-        }
-    }
-    //endregion
-    
     //region Data Persistence
 
     /**
@@ -187,6 +205,89 @@ class DashboardViewModel @Inject constructor(
         }
         navigateBackDashboardFragment()
     }
+    //endregion
+
+    //region Utility Functions
+
+    /**
+     * Clears the current error message.
+     */
+    fun clearError() {
+        _error.value = null
+    }
+
+    private fun generateChartData(valueExtractor: (Activity) -> Number): List<Pair<String, Float>> {
+        val dayFormat = SimpleDateFormat("EEE", Locale.getDefault())
+
+        // Create a map of activities by date for quick lookup.
+        // The key will be the date formatted as "yyyy-MM-dd".
+        val activitiesByDate = weeklyActivities.value.associateBy {
+            // Convert seconds to milliseconds for Date object
+            val date = Date(it.dateOfActivity * 1000)
+            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+        }
+
+        val chartData = mutableListOf<Pair<String, Float>>()
+
+        // Iterate through the last 7 days, starting from 6 days ago up to today.
+        for (i in 6 downTo 0) {
+            val dayCalendar = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -i)
+            }
+            val dayDate = dayCalendar.time
+            val dayLabel = dayFormat.format(dayDate)
+            val dateKey = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(dayDate)
+
+            val activity = activitiesByDate[dateKey]
+            val value = activity?.let { valueExtractor(it).toFloat() } ?: 0f
+
+            chartData.add(Pair(dayLabel, value))
+        }
+        return chartData
+    }
+
+
+    /**
+     * Get data for steps chart
+     */
+    fun getStepsData(): List<Pair<String, Float>> {
+        Log.d(LOG_TAG, "Weekly activities for steps chart: ${weeklyActivities.value}")
+        val data = generateChartData { it.steps }
+        Log.d(LOG_TAG, "Formatted steps data for chart: $data")
+        return data
+    }
+
+    /**
+     * Get data for water chart
+     */
+    fun getWaterData(): List<Pair<String, Float>> {
+        Log.d(LOG_TAG, "Weekly activities for water chart: ${weeklyActivities.value}")
+        val data = generateChartData { it.waterGlasses }
+        Log.d(LOG_TAG, "Formatted water data for chart: $data")
+        return data
+    }
+
+    /**
+     * Get data for exercise chart
+     */
+    fun getExerciseData(): List<Pair<String, Float>> {
+        Log.d(LOG_TAG, "Weekly activities for exercise chart: ${weeklyActivities.value}")
+        val data = generateChartData { it.exerciseCalories }
+        Log.d(LOG_TAG, "Formatted exercise data for chart: $data")
+        return data
+    }
+
+    /**
+     * Get data for sleep chart
+     */
+    fun getSleepData(): List<Pair<String, Float>> {
+        Log.d(LOG_TAG, "Weekly activities for sleep chart: ${weeklyActivities.value}")
+        val data = generateChartData { it.sleepHours }
+        Log.d(LOG_TAG, "Formatted sleep data for chart: $data")
+        return data
+    }
+
+
     /**
      * Generates initials from the user's full name.
      * Returns up to 2 characters representing the user's initials.
@@ -198,9 +299,8 @@ class DashboardViewModel @Inject constructor(
         if (fullName.isBlank()) return "NA"
 
         return fullName.split(" ")
-            .filter { it.isNotBlank() }
-            .take(2)
-            .joinToString("") { it.first().uppercase() }
+            .filter { it.isNotEmpty() }
+            .take(2).joinToString("") { it.first().uppercase() }
     }
     //endregion
 }
