@@ -2,6 +2,7 @@ package com.apptimistiq.android.fitstreak.main
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -20,29 +21,14 @@ import com.apptimistiq.android.fitstreak.R
 import com.apptimistiq.android.fitstreak.authentication.AuthDataResult
 import com.apptimistiq.android.fitstreak.authentication.AuthenticationViewModel
 import com.apptimistiq.android.fitstreak.databinding.ActivityMainBinding
+import com.apptimistiq.android.fitstreak.main.data.domain.NavSetupInfo
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.apptimistiq.android.fitstreak.main.home.SplashViewModel
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
-
-/**
- * Main activity serving as the entry point for the FitStreak application.
- *
- * This activity sets up the navigation components, bottom navigation, and handles
- * permission-based functionality changes. It observes permission states from the
- * ViewModel and conditionally degrades or upgrades app features based on activity
- * permission status.
- *
- * @author FitStreak Team
- * @version 1.0
- */
-
-// Helper data class for navigation setup information
-private data class NavSetupInfo(val isAuthenticated: Boolean, val isOnboarded: Boolean, val isReady: Boolean)
 
 class MainActivity : AppCompatActivity() {
 
@@ -59,21 +45,11 @@ class MainActivity : AppCompatActivity() {
 
     // ViewModel instances using the injected factory
     private val viewModel by viewModels<MainViewModel> { viewModelFactory }
-    private val authViewModel by viewModels<AuthenticationViewModel> { viewModelFactory }// Add a ViewModel property to track splash screen state
-    // Add a ViewModel property to track splash screen state
-    private val splashViewModel by viewModels<SplashViewModel>()
+    private val authViewModel by viewModels<AuthenticationViewModel> { viewModelFactory }
 
-    /**
-     * Initializes the activity, sets up navigation, and observes permission-related events.
-     *
-     * @param savedInstanceState The saved instance state bundle
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
-
         // Handle the splash screen transition
         val splashScreen = installSplashScreen()
-
-
         super.onCreate(savedInstanceState)
 
         // Perform dependency injection
@@ -95,13 +71,15 @@ class MainActivity : AppCompatActivity() {
 
         // Initialize authentication state ASAP
         initializeAuthState()
+
+        // Observe UI state from the ViewModel
+        observeUIState()
     }
 
     private fun initializeAuthState() {
         lifecycleScope.launch {
             // Combine authentication states and capture the result
-            authViewModel.isAuthenticated.combine (authViewModel.userState) { authResult, userStateResult ->
-
+            authViewModel.isAuthenticated.combine(authViewModel.userState) { authResult, userStateResult ->
                 if(authResult is AuthDataResult.Success && userStateResult is AuthDataResult.Success) {
                     NavSetupInfo(
                         isAuthenticated = authResult.data,
@@ -110,23 +88,48 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 else {
-                    NavSetupInfo(false,false, false) // Default to unauthenticated and uninitialized
+                    NavSetupInfo(false, false, false) // Default to unauthenticated and uninitialized
                 }
-            } .filter { it.isReady } // Process only when both results are Success
+            }.filter { it.isReady } // Process only when both results are Success
                 .collectLatest { navSetUpInfo ->
-                if (!navigationInitialized) {
-                    Log.d("MainActivity", "Auth state received: isAuthenticated=${navSetUpInfo.isAuthenticated}, isOnboarded=${navSetUpInfo.isOnboarded}, isReady=${navSetUpInfo.isReady}")
-                    setupNavigationGraphAndUI(navSetUpInfo.isAuthenticated, navSetUpInfo.isOnboarded)
-                    observePermissionEvents()
-                    navigationInitialized = true
+                    if (!navigationInitialized) {
+                        Log.d("MainActivity", "Auth state received: isAuthenticated=${navSetUpInfo.isAuthenticated}, isOnboarded=${navSetUpInfo.isOnboarded}")
+                        setupNavigationGraphAndUI(navSetUpInfo.isAuthenticated, navSetUpInfo.isOnboarded)
+                        navigationInitialized = true
+                    }
                 }
-
-
-            }
         }
     }
 
+    private fun observeUIState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState ->
+                    // Update bottom nav visibility based on state
+                    bottomNav.visibility = if (uiState.bottomNavVisible) View.VISIBLE else View.GONE
 
+                    // Configure navigation based on degradation state
+                    if (uiState.degradeHomeFunctionality) {
+                        updateNavigationMenuForDegradedHome()
+                        // Reset the flag after processing
+                        viewModel.resetHomeDestinationMap()
+                    }
+
+                    if (uiState.upgradeHomeFunctionality) {
+                        updateNavigationMenuForFullHome()
+                        viewModel.resetUpgradedHomeDestinationMap()
+                    }
+
+                    // Show permission denied snackbar if needed
+                    if (uiState.showPermissionDeniedMessage &&
+                        navController.currentDestination?.id != R.id.homeTransitionFragment) {
+                        showPermissionDeniedSnackbar()
+                        viewModel.resetActivityPermissionDenied()
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Sets up the Navigation component with bottom navigation and toolbar.
@@ -161,7 +164,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.daily_progress_fragment,
                 R.id.recipeFragment,
                 R.id.dashboardFragment,
-                R.id.loginFragment // loginFragment can be a top-level destination if starting there
+                R.id.loginFragment
             )
         )
 
@@ -181,60 +184,18 @@ class MainActivity : AppCompatActivity() {
                 R.id.welcomeFragment,
                 R.id.goalSelectionFragment,
                 R.id.homeTransitionFragment -> {
-                    bottomNav.visibility = android.view.View.GONE
-                    supportActionBar?.hide() //Also hide ActionBar for these screens
+                    viewModel.setBottomNavVisibility(false)
+                    supportActionBar?.hide()
                 }
                 else -> {
-                    bottomNav.visibility = android.view.View.VISIBLE
+                    viewModel.setBottomNavVisibility(true)
                     supportActionBar?.show()
                 }
             }
         }
     }
 
-    /**
-     * Sets up observers for permission-related events from the ViewModel.
-     * This includes handling permission denied scenarios and functionality degradation/upgrades.
-     */
-    private fun observePermissionEvents() {
-        // Observer for permission denied events
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.activityPermissionDenied.collect { permissionDenied ->
-                    if (permissionDenied) {
-                        // Only show Snackbar if not on HomeTransitionFragment,
-                        // as it has its own UI for this.
-                        if (navController.currentDestination?.id != R.id.homeTransitionFragment) {
-                            showPermissionDeniedSnackbar()
-                        }
-                        viewModel.resetActivityPermissionDenied()
-                    }
-                }
-            }
-        }
 
-        // Observer for functionality degradation events
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.degradeHomeFunctionality.collect { degradeHomeFunctionality ->
-                    if (degradeHomeFunctionality) {
-                        degradeHomeDestinationMenu()
-                    }
-                }
-            }
-        }
-
-        // Observer for functionality upgrade events
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.upgradeHomeFunctionality.collect { upgradeHomeFunctionality ->
-                    if (upgradeHomeFunctionality) {
-                        upgradeHomeDestinationMenu()
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Displays a snackbar informing the user about the denied activity permission
@@ -256,11 +217,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * Reconfigures the bottom navigation to use the degraded home destination
      * when activity permissions are denied.
-     *
-     * This redirects users to an alternative experience that doesn't require
-     * the denied permission.
      */
-    private fun degradeHomeDestinationMenu() {
+    private fun updateNavigationMenuForDegradedHome() {
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.daily_progress_fragment -> {
@@ -305,11 +263,8 @@ class MainActivity : AppCompatActivity() {
     /**
      * Reconfigures the bottom navigation to use the full-featured home destination
      * when activity permissions are granted.
-     *
-     * This restores the complete functionality for users who have granted
-     * the required permission.
      */
-    private fun upgradeHomeDestinationMenu() {
+    private fun updateNavigationMenuForFullHome() {
         bottomNav.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.daily_progress_fragment -> {

@@ -1,148 +1,140 @@
 package com.apptimistiq.android.fitstreak.main
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.apptimistiq.android.fitstreak.main.data.domain.MainUIState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 /**
  * ViewModel for the main application flow.
- * 
- * Manages states related to:
- * - Activity recognition permissions
- * - Navigation between main app destinations
- * - Home screen functionality states
+ * Uses MainUIState as the single source of truth for all UI-related state.
  */
 class MainViewModel @Inject constructor() : ViewModel() {
 
-    //region Permission States
-    /**
-     * Tracks if activity recognition permission check is in progress
-     * True when checking, false when check is complete
-     */
-    private val _activityPermissionStatusCheck = MutableStateFlow(false)
-    val activityPermissionStatusCheck = _activityPermissionStatusCheck
-
-    /**
-     * Indicates if activity recognition permission was denied by the user
-     */
-    private val _activityPermissionDenied = MutableStateFlow(false)
-    val activityPermissionDenied = _activityPermissionDenied
-    //endregion
-
-    //region Navigation States
-    /**
-     * Tracks when navigation to DailyProgress screen should occur
-     */
-    private val _navigateToDailyProgress = MutableStateFlow(false)
-    val navigateToDailyProgress = _navigateToDailyProgress
-    //endregion
-
-    //region Home Functionality States
-    /**
-     * Controls whether home functionality should be reduced due to permission issues
-     */
-    private val _degradeHomeFunctionality = MutableStateFlow(false)
-    val degradeHomeFunctionality = _degradeHomeFunctionality
-
-    /**
-     * Controls whether home functionality should be enhanced after permissions granted
-     */
-    private val _upgradeHomeFunctionality = MutableStateFlow(false)
-    val upgradeHomeFunctionality = _upgradeHomeFunctionality
-    //endregion
+    // Single source of truth for UI state
+    private val _uiState = MutableStateFlow(MainUIState())
+    val uiState: StateFlow<MainUIState> = _uiState.asStateFlow()
 
 
-
-    //region Permission Management Methods
     /**
      * Handles the result of the permission request and updates relevant states.
-     *
-     * @param isGranted True if the permission was granted, false otherwise.
      */
     fun handlePermissionResult(isGranted: Boolean) {
         if (isGranted) {
-            _navigateToDailyProgress.value = true
-            _upgradeHomeFunctionality.value = true
-            _degradeHomeFunctionality.value = false
-            _activityPermissionDenied.value = false
+            _uiState.update { currentState ->
+                currentState.copy(
+                    navigateToDailyProgress = true,
+                    upgradeHomeFunctionality = true,
+                    degradeHomeFunctionality = false,
+                    isActivityPermissionDenied = false,
+                    isHomeScreenDegraded = false,
+                    showPermissionDeniedMessage = false
+                )
+            }
         } else {
-            _navigateToDailyProgress.value = false
-            _degradeHomeFunctionality.value = true
-            _upgradeHomeFunctionality.value = false
-            _activityPermissionDenied.value = true
+            _uiState.update { currentState ->
+                currentState.copy(
+                    navigateToDailyProgress = false,
+                    degradeHomeFunctionality = true,
+                    upgradeHomeFunctionality = false,
+                    isActivityPermissionDenied = true,
+                    isHomeScreenDegraded = true,
+                    showPermissionDeniedMessage = true
+                )
+            }
         }
     }
 
+    /**
+     * Activates permission status check
+     */
     fun activatePermissionStatusCheck() {
-        _activityPermissionStatusCheck.value = true
+        _uiState.update { it.copy(isPermissionCheckInProgress = true) }
     }
 
-    /**
-     * Marks that activity recognition permission is denied by the user
-     */
-    fun activityPermissionDenied() {
-        _activityPermissionDenied.value = true
-    }
 
     /**
      * Resets the activity permission denied flag
      */
     fun resetActivityPermissionDenied() {
-        _activityPermissionDenied.value = false
+        _uiState.update {
+            it.copy(
+                isActivityPermissionDenied = false,
+                showPermissionDeniedMessage = false
+            )
+        }
     }
 
     /**
      * Called when activity permission check has completed
-     * Updates status check flag
      */
     fun activityPermissionCheckComplete() {
-        _activityPermissionStatusCheck.value = false
+        _uiState.update { it.copy(isPermissionCheckInProgress = false) }
     }
-    //endregion
 
-    //region Navigation Methods
     /**
-     * Signals readiness to navigate to DailyProgress screen from the homeTransition Fragment
+     * Signals readiness to navigate to DailyProgress screen
+     * Note: Not used directly but kept for API compatibility
      */
     fun readyToNavigateToDailyProgress() {
-        _navigateToDailyProgress.value = true
+        _uiState.update { it.copy(navigateToDailyProgress = true) }
     }
 
     /**
      * Resets navigation flag after navigation to DailyProgress is complete
      */
     fun navigationToDailyProgressComplete() {
-        _navigateToDailyProgress.value = false
+        _uiState.update { it.copy(navigateToDailyProgress = false) }
     }
-    //endregion
 
-    //region Home Functionality Methods
     /**
      * Sets flag to degrade home destination menu functionality
      */
     fun degradeHomeDestinationMenu() {
-        _degradeHomeFunctionality.value = true
+        _uiState.update {
+            it.copy(
+                isHomeScreenDegraded = true,
+                degradeHomeFunctionality = true
+            )
+        }
     }
 
     /**
      * Sets flag to upgrade home destination menu functionality
      */
     fun upgradeHomeDestinationMenu() {
-        _upgradeHomeFunctionality.value = true
+        _uiState.update {
+            it.copy(
+                isHomeScreenDegraded = false,
+                upgradeHomeFunctionality = true
+            )
+        }
     }
 
     /**
      * Resets the home functionality upgrade flag
+     * Note: Not used directly but kept for API compatibility
      */
     fun resetUpgradedHomeDestinationMap() {
-        _upgradeHomeFunctionality.value = false
+        _uiState.update { it.copy(upgradeHomeFunctionality = false) }
     }
 
     /**
      * Resets the home functionality degradation flag
+     * Note: Not used directly but kept for API compatibility
      */
     fun resetHomeDestinationMap() {
-        _degradeHomeFunctionality.value = false
+        _uiState.update { it.copy(degradeHomeFunctionality = false) }
     }
-    //endregion
+
+    /**
+     * Sets bottom navigation visibility
+     */
+    fun setBottomNavVisibility(isVisible: Boolean) {
+        _uiState.update { it.copy(bottomNavVisible = isVisible) }
+    }
 }

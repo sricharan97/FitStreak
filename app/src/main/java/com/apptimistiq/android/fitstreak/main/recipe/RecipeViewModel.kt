@@ -8,6 +8,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.text.get
 
 /**
  * Enum class representing different diet types for recipes.
@@ -71,7 +72,9 @@ class RecipeViewModel @Inject constructor(
      * StateFlow that tracks the currently selected recipe diet type.
      */
     private val _menuItemSelection: StateFlow<String> =
-        recipeRemoteDataSource.getRecipeDietType().stateIn(
+        recipeRemoteDataSource.getRecipeDietType()
+            .catch { emit(recipeTypeMap[RecipeDietType.Vegetarian]!!) }
+            .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = recipeTypeMap[RecipeDietType.Vegetarian]!!
@@ -110,6 +113,11 @@ class RecipeViewModel @Inject constructor(
     private val breakfastRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Breakfast]!!)
+                .catch {
+                    emit(RecipeTrackUiState(
+                        recipeType = mealTypeMap[MealType.Breakfast]!!,
+                        recipes = emptyList()))
+                }
         }
 
     /**
@@ -118,6 +126,11 @@ class RecipeViewModel @Inject constructor(
     private val mainCourseRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.MainCourse]!!)
+                .catch {
+                    emit(RecipeTrackUiState(
+                        recipeType = mealTypeMap[MealType.MainCourse]!!,
+                        recipes = emptyList()))
+                }
         }
 
     /**
@@ -126,6 +139,11 @@ class RecipeViewModel @Inject constructor(
     private val snackRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Snack]!!)
+                .catch {
+                    emit(RecipeTrackUiState(
+                        recipeType = mealTypeMap[MealType.Snack]!!,
+                        recipes = emptyList()))
+                }
         }
 
     /**
@@ -134,6 +152,11 @@ class RecipeViewModel @Inject constructor(
     private val saladRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Salad]!!)
+                .catch {
+                    emit(RecipeTrackUiState(
+                        recipeType = mealTypeMap[MealType.Salad]!!,
+                        recipes = emptyList()))
+                }
         }
 
     /**

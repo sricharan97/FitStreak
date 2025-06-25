@@ -1,6 +1,5 @@
 package com.apptimistiq.android.fitstreak.main.dashboard
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.apptimistiq.android.fitstreak.main.data.ActivityDataSource
@@ -92,7 +91,6 @@ class DashboardViewModel @Inject constructor(
     private val _displayedGoalValue = MutableStateFlow(0)
     val displayedGoalValue: StateFlow<Int> = _displayedGoalValue
 
-    private val currentIncrDcrVal = MutableStateFlow(0)
     //endregion
 
     init {
@@ -105,7 +103,7 @@ class DashboardViewModel @Inject constructor(
             dataSource.getWeekActivities()
                 .catch { e ->
                     _error.value = "Failed to load weekly activities: ${e.message}"
-                    Log.e(LOG_TAG, "Error fetching weekly activities", e)
+                    _isLoading.value = false
                 }
                 .collect { activities ->
                     _weeklyActivities.value = activities
@@ -159,32 +157,26 @@ class DashboardViewModel @Inject constructor(
         _displayedGoalValue.update { value }
     }
 
+    private fun getIncrementValue(): Int {
+        return when (_currentEditInfoType.value) {
+            GoalUserInfo.STEPS -> 500
+            GoalUserInfo.EXERCISE -> 50
+            else -> 1
+        }
+    }
+
     /**
      * Increments the value of the goal being edited based on its type.
      */
     fun incrementGoalInfoValue() {
-        currentIncrDcrVal.update {
-            when (_currentEditInfoType.value) {
-                GoalUserInfo.STEPS -> 500
-                GoalUserInfo.EXERCISE -> 50
-                else -> 1
-            }
-        }
-        _displayedGoalValue.update { it + currentIncrDcrVal.value }
+        _displayedGoalValue.update { it + getIncrementValue() }
     }
 
     /**
      * Decrements the value of the goal being edited, ensuring it doesn't go below zero.
      */
     fun decrementGoalInfoValue() {
-        currentIncrDcrVal.update {
-            when (_currentEditInfoType.value) {
-                GoalUserInfo.STEPS -> 500
-                GoalUserInfo.EXERCISE -> 50
-                else -> 1
-            }
-        }
-        _displayedGoalValue.update { (it - currentIncrDcrVal.value).coerceAtLeast(0) }
+        _displayedGoalValue.update { (it - getIncrementValue()).coerceAtLeast(0) }
     }
 
     /**
@@ -251,9 +243,7 @@ class DashboardViewModel @Inject constructor(
      * Get data for steps chart
      */
     fun getStepsData(): List<Pair<String, Float>> {
-        Log.d(LOG_TAG, "Weekly activities for steps chart: ${weeklyActivities.value}")
         val data = generateChartData { it.steps }
-        Log.d(LOG_TAG, "Formatted steps data for chart: $data")
         return data
     }
 
@@ -261,9 +251,7 @@ class DashboardViewModel @Inject constructor(
      * Get data for water chart
      */
     fun getWaterData(): List<Pair<String, Float>> {
-        Log.d(LOG_TAG, "Weekly activities for water chart: ${weeklyActivities.value}")
         val data = generateChartData { it.waterGlasses }
-        Log.d(LOG_TAG, "Formatted water data for chart: $data")
         return data
     }
 
@@ -271,9 +259,7 @@ class DashboardViewModel @Inject constructor(
      * Get data for exercise chart
      */
     fun getExerciseData(): List<Pair<String, Float>> {
-        Log.d(LOG_TAG, "Weekly activities for exercise chart: ${weeklyActivities.value}")
         val data = generateChartData { it.exerciseCalories }
-        Log.d(LOG_TAG, "Formatted exercise data for chart: $data")
         return data
     }
 
@@ -281,9 +267,7 @@ class DashboardViewModel @Inject constructor(
      * Get data for sleep chart
      */
     fun getSleepData(): List<Pair<String, Float>> {
-        Log.d(LOG_TAG, "Weekly activities for sleep chart: ${weeklyActivities.value}")
         val data = generateChartData { it.sleepHours }
-        Log.d(LOG_TAG, "Formatted sleep data for chart: $data")
         return data
     }
 

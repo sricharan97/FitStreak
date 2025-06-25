@@ -166,7 +166,6 @@ class ProgressViewModel @Inject constructor(
      */
     fun addSteps(reading: Int) {
         activityItemUiStateList.add(ActivityItemUiState(ActivityType.STEP, reading))
-        Log.d(LOG_TAG, "Inside add steps method with the steps reading passed - $reading")
         _uiState.update { currentUiState ->
             currentUiState.copy(readSteps = true)
         }
@@ -179,7 +178,6 @@ class ProgressViewModel @Inject constructor(
      */
     fun addCalories(reading: Int) {
         activityItemUiStateList.add(ActivityItemUiState(ActivityType.EXERCISE, reading))
-        Log.d(LOG_TAG, "Inside add calories method with the calories reading passed - $reading")
         _uiState.update { currentUiState ->
             currentUiState.copy(readCalories = true)
         }
@@ -192,7 +190,6 @@ class ProgressViewModel @Inject constructor(
      */
     fun addLitres(reading: Int) {
         activityItemUiStateList.add(ActivityItemUiState(ActivityType.WATER, reading))
-        Log.d(LOG_TAG, "Inside add water method with the litres reading passed - $reading")
         _uiState.update { currentUiState ->
             currentUiState.copy(readWaterLitres = true)
         }
@@ -205,7 +202,6 @@ class ProgressViewModel @Inject constructor(
      */
     fun addSleepHrs(reading: Int) {
         activityItemUiStateList.add(ActivityItemUiState(ActivityType.SLEEP, reading))
-        Log.d(LOG_TAG, "Inside add sleep hrs method with the sleep hrs reading passed - $reading")
         _uiState.update { currentUiState ->
             currentUiState.copy(readSleepHrs = true)
         }
@@ -228,10 +224,7 @@ class ProgressViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            Log.d(
-                LOG_TAG, "Seems like a new entry and calling the saveActivity method with " +
-                        "current activity list value = $activityItemUiStateList"
-            )
+
             dataSource.saveActivity(activityItemUiStateList, currentDate)
         }
         activitySaved()
@@ -241,10 +234,6 @@ class ProgressViewModel @Inject constructor(
      * Updates an existing activity record for today
      */
     private fun updateActivity() {
-        Log.d(
-            LOG_TAG, "Inside the updateActivity method with current activityList value" +
-                    "= $activityItemUiStateList"
-        )
 
         viewModelScope.launch {
             dataSource.updateActivity(activityItemUiStateList, currentDate)
@@ -352,37 +341,24 @@ class ProgressViewModel @Inject constructor(
      */
     fun updateUserActivityVal() {
         activityItemsToday.value?.forEach { activityItem ->
-            Log.d(
-                LOG_TAG,
-                "Inside updateUSerActivityVal with current Activity item being ${activityItem.dataType}"
-            )
 
-            Log.d(
-                LOG_TAG,
-                "Inside updateUSerActivityVal with current Activity value ${_currentActivityType.value}"
-            )
 
             if (_currentActivityType.value == activityItem.dataType) {
                 when (_currentActivityType.value) {
                     ActivityType.SLEEP -> {
                         _updateFitSleep.update { _displayedActivityValue.value }
-                        Log.d(
-                            LOG_TAG,
-                            "sleep value calculated after edit is ${_displayedActivityValue.value}"
-                        )
+
                     }
 
                     ActivityType.EXERCISE -> {
                         val updatedVal = _displayedActivityValue.value
                         _updateFitExercise.update { updatedVal }
-                        Log.d(LOG_TAG, "exercise value calculated after edit is $updatedVal")
                     }
 
                     ActivityType.WATER -> {
                         val updatedVal =
-                            _displayedActivityValue.value - activityItem.currentReading
+                            _displayedActivityValue.value
                         _updateFitWater.update { updatedVal }
-                        Log.d(LOG_TAG, "water value calculated after edit is $updatedVal")
                     }
                     else -> {}
                 }
@@ -397,45 +373,17 @@ class ProgressViewModel @Inject constructor(
      * 
      * @param updatedValue The new value to save
      */
+    /**
+     * Updates activity values in the database after the data is updated in Google Fit
+     *
+     * @param updatedValue The new value to save
+     */
     fun updateUserEnteredValues(updatedValue: Int) {
         val editActivityItemList = ArrayList<ActivityItemUiState>()
 
         activityItemsToday.value?.forEach { activityItem ->
-            Log.d(
-                LOG_TAG,
-                "Inside updateUSerActivityVal with current Activity item being ${activityItem.dataType}"
-            )
-
-            Log.d(
-                LOG_TAG,
-                "Inside updateUSerActivityVal with current Activity value ${_currentActivityType.value}"
-            )
-
             if (_currentActivityType.value == activityItem.dataType) {
-                when (_currentActivityType.value) {
-                    ActivityType.SLEEP -> {
-                        editActivityItemList.add(activityItem.copy(currentReading = updatedValue))
-                        Log.d(
-                            LOG_TAG,
-                            "sleep value calculated after edit is $updatedValue"
-                        )
-                    }
-
-                    ActivityType.EXERCISE -> {
-                        editActivityItemList.add(
-                            activityItem.copy(
-                                currentReading = updatedValue
-                            )
-                        )
-                        Log.d(LOG_TAG, "exercise value calculated after edit is $updatedValue")
-                    }
-
-                    ActivityType.WATER -> {
-                        editActivityItemList.add(activityItem.copy(currentReading = updatedValue))
-                        Log.d(LOG_TAG, "water value calculated after edit is $updatedValue")
-                    }
-                    else -> {}
-                }
+                editActivityItemList.add(activityItem.copy(currentReading = updatedValue))
             } else {
                 editActivityItemList.add(activityItem)
             }
