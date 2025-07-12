@@ -28,6 +28,7 @@ import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.android.material.R as materialR
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -176,7 +177,7 @@ class DashboardFragment : Fragment() {
         }
 
         val dataSet = BarDataSet(entries, "Steps").apply {
-            color = resources.getColor(R.color.primary, requireContext().theme)
+            color = getThemeColor(materialR.attr.colorTertiaryContainer)
             valueTextSize = 10f
 
         }
@@ -204,7 +205,7 @@ class DashboardFragment : Fragment() {
         }
 
         val dataSet = BarDataSet(entries, "Water Glasses").apply {
-            color = resources.getColor(R.color.primary, requireContext().theme)
+            color = getThemeColor(materialR.attr.colorTertiaryContainer)
             valueTextSize = 10f
             valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
@@ -234,7 +235,7 @@ class DashboardFragment : Fragment() {
         }
 
         val dataSet = BarDataSet(entries, "Exercise Calories").apply {
-            color = resources.getColor(R.color.primary, requireContext().theme)
+            color = getThemeColor(materialR.attr.colorTertiaryContainer)
             valueTextSize = 10f
 
         }
@@ -259,7 +260,7 @@ class DashboardFragment : Fragment() {
         }
 
         val dataSet = BarDataSet(entries, "Sleep Hours").apply {
-            color = resources.getColor(R.color.primary, requireContext().theme)
+            color = getThemeColor(materialR.attr.colorTertiaryContainer)
             valueTextSize = 10f
             valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
@@ -322,5 +323,11 @@ class DashboardFragment : Fragment() {
             Log.d(LOG_TAG, "User is logged in and onboarded. Navigating to home transition.")
             findNavController().navigate(DashboardFragmentDirections.actionDashboardDestToLoginFragment())
         }
+    }
+
+    private fun getThemeColor(attr: Int): Int {
+        val typedValue = android.util.TypedValue()
+        requireContext().theme.resolveAttribute(attr, typedValue, true)
+        return typedValue.data
     }
 }

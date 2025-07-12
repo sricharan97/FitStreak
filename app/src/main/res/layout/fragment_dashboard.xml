@@ -23,6 +23,7 @@
             android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
+            app:cardBackgroundColor="?attr/colorSecondary"
             app:cardCornerRadius="24dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -32,6 +33,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="@{viewModel.userInitialsState}"
+                android:textColor="?attr/colorOnPrimaryContainer"
                 android:textAppearance="?attr/textAppearanceHeadline6"
                 tools:text="JD" />
         </com.google.android.material.card.MaterialCardView>
@@ -44,6 +46,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/logout"
             android:src="@drawable/ic_logout"
+            app:tint="?attr/colorSecondary"
             app:layout_constraintBottom_toBottomOf="@+id/profile_avatar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/profile_avatar" />
@@ -119,14 +122,7 @@
                             android:layout_marginTop="8dp"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@id/edit_steps_button" >
-
-                            <com.github.mikephil.charting.charts.BarChart
-                                android:id="@+id/water_chart"
-                                android:layout_width="0dp"
-                                android:layout_height="150dp"
-                                android:layout_marginTop="8dp" />
-                        </com.github.mikephil.charting.charts.BarChart>
+                            app:layout_constraintTop_toBottomOf="@id/edit_steps_button" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -166,6 +162,15 @@
                             android:src="@drawable/ic_dashboard_enter_value"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent" />
+
+                        <com.github.mikephil.charting.charts.BarChart
+                            android:id="@+id/water_chart"
+                            android:layout_width="0dp"
+                            android:layout_height="150dp"
+                            android:layout_marginTop="8dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/edit_water_button" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </com.google.android.material.card.MaterialCardView>
