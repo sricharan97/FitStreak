@@ -207,8 +207,9 @@ class DailyProgressFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         when (resultCode) {
             Activity.RESULT_OK -> when (requestCode) {
-                GOOGLE_FIT_PERMISSION_REQUEST_CODE -> viewModel.accessGoogleFit()
-                else -> {
+                GOOGLE_FIT_PERMISSION_REQUEST_CODE -> {viewModel.accessGoogleFit()
+                Log.d(LOG_TAG, "Google Fit permission granted")}
+            else -> {
                     // Result wasn't from Google Fit
                 }
             }
@@ -221,6 +222,15 @@ class DailyProgressFragment : Fragment() {
                     .setAction(android.R.string.ok) { checkForOAuthPermissions() }
                     .show()
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Re-check permissions when the fragment resumes
+        // This handles the case where the user grants permission and returns to the app
+        if (GoogleSignIn.hasPermissions(account, fitnessOptions)) {
+            viewModel.accessGoogleFit()
         }
     }
 
@@ -378,13 +388,15 @@ class DailyProgressFragment : Fragment() {
         // If not, initiate the authorization flow
         if (!GoogleSignIn.hasPermissions(account, fitnessOptions)) {
             GoogleSignIn.requestPermissions(
-                requireActivity(),
+                this,
                 GOOGLE_FIT_PERMISSION_REQUEST_CODE,
                 account,
                 fitnessOptions
             )
+            Log.d(LOG_TAG, "Requesting Google Fit permissions")
         } else {
             viewModel.accessGoogleFit()
+            Log.d(LOG_TAG, "Google Fit permissions already granted")
         }
     }
 
