@@ -75,6 +75,15 @@ data class RecipeCard(
 )
 
 /**
+ * Response object for the recipe URL endpoint.
+ *
+ * @property recipeUrl The source URL of the recipe.
+ */
+data class RecipeUrlResponse(
+    @Json(name = "spoonacularSourceUrl") val recipeUrl: String?
+)
+
+/**
  * Extension function to convert network DTO objects to domain models.
  *
  * @param mealType The type of meal (breakfast, lunch, dinner, etc.)

@@ -262,6 +262,11 @@ class DailyProgressFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
+                    uiState.userMessages?.let { message ->
+                        Snackbar.make(binding.progressCoordinatorLayoutRoot, message, Snackbar.LENGTH_LONG).show()
+                        viewModel.userMessageShown()
+                    }
+
                     if (uiState.canAccessGoogleFit && !uiState.subscriptionDone) {
                         Log.d(LOG_TAG, "about to call addsubscriptions inside observer")
                         addSubscriptions()

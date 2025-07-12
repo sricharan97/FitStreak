@@ -38,5 +38,5 @@ interface SpoonacularApiService {
     @GET("recipes/{id}/information?${BuildConfig.CONSUMER_KEY}=${BuildConfig.SECRET}")
     suspend fun getRecipeUrl(
         @Path("id") recipeId: Int
-    ): String
+    ): RecipeUrlResponse
 }

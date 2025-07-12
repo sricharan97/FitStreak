@@ -101,6 +101,7 @@ class RecipeViewModel @Inject constructor(
      */
     val recipeUrl: StateFlow<String?> = _currentRecipeId.flatMapLatest { currentRecipeID ->
         recipeRemoteDataSource.getRecipeUrl(currentRecipeID)
+            .catch { emit(null) } // Add error handling
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),

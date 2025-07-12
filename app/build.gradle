@@ -29,7 +29,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.apptimistiq.android.fitstreak.FitStreakTestRunner"
 
         // should correspond to key/value pairs inside the file
         buildConfigField("String", "CONSUMER_KEY", apikeyProperties['CONSUMER_KEY'])
@@ -42,18 +42,37 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
 
     testOptions {
         unitTests{
             includeAndroidResources = true
+            returnDefaultValues = true
         }
     }
+
+    lint {
+        disable 'NotificationPermission'
+    }
+
+    packaging {
+        resources {
+            pickFirsts += "mockito-extensions/org.mockito.plugins.MemberAccessor"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+        jniLibs {
+            useLegacyPackaging = true
+            pickFirsts += "**/*.so" // Include all .so files
+        }
+    }
+
+
 }
 
 dependencies {
@@ -123,15 +142,31 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.hamcrest:hamcrest-all:1.3"
     //Robolectric environment dependency
-    testImplementation 'org.robolectric:robolectric:4.7.3'
+    testImplementation 'org.robolectric:robolectric:4.13'
     //AndroidX Test - JVM testing
     testImplementation 'androidx.test:core:1.6.1'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'org.mockito:mockito-core:4.1.0'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:4.1.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    testImplementation 'io.mockk:mockk:1.13.8'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-idling-resource:3.5.1'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    androidTestImplementation('io.mockk:mockk-android:1.13.8')
+    androidTestImplementation 'androidx.arch.core:core-testing:2.2.0'
+    // Firebase Auth UI
+    androidTestImplementation("com.firebaseui:firebase-ui-auth:$firebase_ui_auth_version")
+
+    //testing coroutines
+    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+
+    // Fragment Testing
+    debugImplementation "androidx.fragment:fragment-testing:1.8.8"
+
 
 
     //Adding JodaTime library as a dependency
@@ -179,4 +214,6 @@ kapt {
         option("--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED")
     }
 }
+
+
 

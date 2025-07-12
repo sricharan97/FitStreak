@@ -3,7 +3,6 @@ package com.apptimistiq.android.fitstreak.main.data
 import com.apptimistiq.android.fitstreak.main.data.domain.RecipeTrackUiState
 import com.apptimistiq.android.fitstreak.network.SpoonacularApiService
 import com.apptimistiq.android.fitstreak.network.asDomainModel
-import com.apptimistiq.android.fitstreak.utils.parseRecipeUrl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +67,7 @@ class RecipeRemoteRepository @Inject constructor(
                 emit(null)
             } else {
                 emit(
-                    parseRecipeUrl(JSONObject(retrofitService.getRecipeUrl(recipeId)))
+                    retrofitService.getRecipeUrl(recipeId).recipeUrl
                 )
             }
         }.flowOn(ioDispatcher).conflate()

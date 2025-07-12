@@ -60,6 +60,7 @@ class ProgressViewModelTest {
 
         // When
         viewModel.navigateToEditActivity(ActivityType.WATER)
+        viewModel.prepareForEditing(ActivityType.WATER)
         advanceUntilIdle()
 
         // Then
@@ -171,25 +172,25 @@ class ProgressViewModelTest {
         val fitWaterJob = launch { viewModel.updateFitWater.collect { fitWaterResults.add(it) } }
         advanceUntilIdle() // Collect initial values
 
-        // Set the state to editing WATER with a new value
-        viewModel.navigateToEditActivity(ActivityType.WATER)
+        // 1. Prepare for editing, which loads the initial value from the data source.
+        viewModel.prepareForEditing(ActivityType.WATER)
+        advanceUntilIdle()
+
+        // 2. Simulate the user entering a new value.
         viewModel.updateDisplayedActivityVal(10)
         advanceUntilIdle()
 
         // When
+        // 3. Save the new value.
         viewModel.updateUserActivityVal()
         advanceUntilIdle()
 
         // Then
         // Check navigation was triggered
-        assertThat(navResults.size, `is`(2))
-        assertThat(navResults[0], `is`(false))
-        assertThat(navResults[1], `is`(true))
+        assertThat(navResults.last(), `is`(true))
 
         // Check the value was sent to the update flow
-        assertThat(fitWaterResults.size, `is`(2))
-        assertThat(fitWaterResults[0], `is`(0))
-        assertThat(fitWaterResults[1], `is`(10))
+        assertThat(fitWaterResults.last(), `is`(10))
 
         // Cleanup
         activityCollectorJob.cancel()
@@ -210,11 +211,16 @@ class ProgressViewModelTest {
         val navJob = launch(testDispatcher) { viewModel.navigateBackProgress.collect { navResults.add(it) } }
         advanceUntilIdle() // Collect initial values
 
-        viewModel.navigateToEditActivity(ActivityType.SLEEP)
+        // 1. Prepare for editing, which loads the initial value from the data source.
+        viewModel.prepareForEditing(ActivityType.SLEEP)
+        advanceUntilIdle()
+
+        // 2. Simulate the user entering a new value.
         viewModel.updateDisplayedActivityVal(8)
         advanceUntilIdle()
 
         // When
+        // 3. Save the new value.
         viewModel.updateUserActivityVal()
         advanceUntilIdle()
 
@@ -248,6 +254,7 @@ class ProgressViewModelTest {
         // 2. Set the activity type to be edited.
         val activityTypeToEdit = com.apptimistiq.android.fitstreak.main.data.domain.ActivityType.EXERCISE
         viewModel.navigateToEditActivity(activityTypeToEdit)
+        viewModel.prepareForEditing(activityTypeToEdit)
 
         // 3. Start collecting the activityItemsToday flow to make it active.
         val activityItemsCollector = launch(testDispatcher) { viewModel.activityItemsToday.collect() }
@@ -516,8 +523,8 @@ class ProgressViewModelTest {
         advanceUntilIdle()
 
         // Then
-        assertThat(results.size, `is`(2))
-        assertThat(results[1], `is`(-1)) // Decremented to -1 (there's no validation in the model)
+        assertThat(results.size, `is`(1)) // StateFlow does not emit the same value twice
+        assertThat(results.last(), `is`(0)) // Value should remain 0
         job.cancel()
     }
 

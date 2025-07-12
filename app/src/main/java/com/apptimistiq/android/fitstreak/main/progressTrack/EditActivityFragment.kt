@@ -101,6 +101,12 @@ class EditActivityFragment : Fragment() {
         bindingWorkout.lifecycleOwner = this
         bindingWorkout.viewModel = viewModel
 
+        if (savedInstanceState == null) {
+            arguments?.getSerializable("act_type")?.let {
+                viewModel.prepareForEditing(it as ActivityType)
+            }
+        }
+
         // Set up UI text based on activity type
         when (arguments?.get("act_type")) {
             ActivityType.SLEEP -> {
@@ -127,15 +133,6 @@ class EditActivityFragment : Fragment() {
 
         bindingWorkout.endTimeValue.setOnClickListener {
             TimePickerFragment(it as EditText).show(childFragmentManager, LOG_TAG)
-        }
-
-        // Observe view model state changes
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.activityValueCurrent.collect {
-                    viewModel.updateDisplayedActivityVal(it)
-                }
-            }
         }
 
         // Set up navigation handling

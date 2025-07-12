@@ -1,3 +1,4 @@
+@file:JvmName("BindingAdapters")
 package com.apptimistiq.android.fitstreak.utils
 
 import android.widget.ImageView

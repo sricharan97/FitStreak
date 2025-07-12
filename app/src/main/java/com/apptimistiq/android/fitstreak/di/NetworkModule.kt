@@ -1,6 +1,7 @@
 package com.apptimistiq.android.fitstreak.di
 
 import com.apptimistiq.android.fitstreak.network.SpoonacularApiService
+import com.google.firebase.auth.FirebaseAuth
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -53,5 +54,13 @@ object NetworkModule {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(SpoonacularApiService::class.java)
+    }
+
+    // Add the Firebase Auth provider directly here
+    @JvmStatic
+    @Singleton
+    @Provides
+    fun provideFirebaseAuth(): FirebaseAuth {
+        return FirebaseAuth.getInstance()
     }
 }

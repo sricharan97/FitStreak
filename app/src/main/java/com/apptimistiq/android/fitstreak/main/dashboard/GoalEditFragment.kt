@@ -103,8 +103,8 @@ class GoalEditFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupDataBinding()
-        observeViewModel()
         configureUIBasedOnGoalType()
+        observeViewModel()
     }
     
     // endregion
@@ -125,16 +125,9 @@ class GoalEditFragment : Fragment() {
     private fun observeViewModel() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.goalInfoVal.collect { goalInfoVal ->
-                    viewModel.updateDisplayedGoalInfoVal(goalInfoVal)
-                }
-            }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.navigateBackToDashboard.collect {
                     if (it) {
+                        viewModel.resetEditState() // Reset before navigating
                         findNavController().navigate(R.id.action_goalEditFragment_to_dashboard_dest)
                         viewModel.navigateBackDashboardFragmentComplete()
                     }
@@ -148,7 +141,12 @@ class GoalEditFragment : Fragment() {
      * Sets appropriate text and visibility for UI elements based on the goal type.
      */
     private fun configureUIBasedOnGoalType() {
-        when (arguments?.get("info_type")) {
+        val goalType = arguments?.get("info_type") as? GoalUserInfo ?: return
+
+        // Inform the ViewModel which goal is being edited
+        viewModel.setCurrentGoalTypeForEditing(goalType)
+
+        when (goalType) {
             GoalUserInfo.STEPS -> {
                 binding.editType.text = resources.getString(R.string.step_text_value)
                 binding.editTypeDescp.text = resources.getString(
@@ -191,6 +189,9 @@ class GoalEditFragment : Fragment() {
                 binding.editType.text = resources.getString(R.string.weight_info)
                 binding.editTypeDescp.visibility = View.INVISIBLE
                 binding.goalTag.text = resources.getString(R.string.weight_info_tag)
+            }
+            GoalUserInfo.DEFAULT -> {
+                // This case is not expected here, do nothing.
             }
         }
     }

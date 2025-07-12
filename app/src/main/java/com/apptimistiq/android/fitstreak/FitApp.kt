@@ -11,13 +11,13 @@ import com.apptimistiq.android.fitstreak.di.DaggerAppComponent
  * and provides access to the dependency injection graph through [appComponent].
  * It's registered in the AndroidManifest.xml to be used as the application class.
  */
-class FitApp : Application() {
+open class FitApp : Application() {
 
     /**
      * The application's DI component that provides app-level dependencies.
      * Lazily initialized to ensure it's only created when needed.
      */
-    val appComponent: AppComponent by lazy {
+     val appComponent: AppComponent by lazy {
         initializeComponent()
     }
 
@@ -26,7 +26,7 @@ class FitApp : Application() {
      *
      * @return The created AppComponent instance
      */
-    private fun initializeComponent(): AppComponent {
+    open fun initializeComponent(): AppComponent {
         // Create the AppComponent using the Dagger generated factory
         // and provide application context that will be available in the DI graph
         return DaggerAppComponent.factory().create(applicationContext)

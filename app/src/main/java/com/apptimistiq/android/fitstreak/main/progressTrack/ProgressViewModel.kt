@@ -88,11 +88,15 @@ class ProgressViewModel @Inject constructor(
      * Today's activity items from data source
      */
     val activityItemsToday: StateFlow<List<ActivityItemUiState>?> =
-        dataSource.getTodayActivity().stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        dataSource.getTodayActivity()
+            .catch { exception ->
+                _uiState.update { it.copy(userMessages = exception.message) }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
     /**
      * Temporary storage for activity items before saving or updating
@@ -327,11 +331,26 @@ class ProgressViewModel @Inject constructor(
     }
 
     /**
-     * Decrements the displayed activity value by 1
+     * Decrements the displayed activity value by 1, ensuring it does not go below zero
      */
     fun decrementActivityValue() {
         _displayedActivityValue.update {
-            it - 1
+            if (it > 0) it - 1 else 0
+        }
+    }
+
+    /**
+     * Prepares the ViewModel for editing a specific activity type.
+     * Fetches the current value of the activity and updates the UI state.
+     *
+     * @param activityType The type of activity to be edited
+     */
+    fun prepareForEditing(activityType: ActivityType) {
+        updateCurrentActivityType(activityType)
+        viewModelScope.launch {
+            dataSource.getCurrentActivityVal(activityType).first().let { initialValue ->
+                updateDisplayedActivityVal(initialValue)
+            }
         }
     }
 
@@ -423,6 +442,13 @@ class ProgressViewModel @Inject constructor(
         _updateFitSleep.update {
             0
         }
+    }
+
+    /**
+     * Clears the user message from the UI state after it has been displayed.
+     */
+    fun userMessageShown() {
+        _uiState.update { it.copy(userMessages = null) }
     }
     
     // endregion

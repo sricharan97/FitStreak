@@ -90,17 +90,22 @@ class ActivityLocalRepository @Inject constructor(
             // Check if an activity exists for this date
             val exists = activityDao.activityExistsForDate(date)
             if(exists) {
-                // Extract values from activity items
-                val waterGlasses = activityItems.find { it.dataType == ActivityType.WATER }?.currentReading ?: 0
-                val sleepHours = activityItems.find { it.dataType == ActivityType.SLEEP }?.currentReading ?: 0
-                val exerciseCalories = activityItems.find { it.dataType == ActivityType.EXERCISE }?.currentReading ?: 0
-                val steps = activityItems.find { it.dataType == ActivityType.STEP }?.currentReading ?: 0
+                // Get current activity to preserve values not being updated
+                val currentActivity = activityDao.getTodayActivity().first()
 
-                // Update using the new method name
+                // Extract values from activity items, preserving existing values when not provided
+                val waterGlasses = activityItems.find { it.dataType == ActivityType.WATER }?.currentReading
+                    ?: currentActivity.waterGlasses
+                val sleepHours = activityItems.find { it.dataType == ActivityType.SLEEP }?.currentReading
+                    ?: currentActivity.sleepHours
+                val exerciseCalories = activityItems.find { it.dataType == ActivityType.EXERCISE }?.currentReading
+                    ?: currentActivity.exerciseCalories
+                val steps = activityItems.find { it.dataType == ActivityType.STEP }?.currentReading
+                    ?: currentActivity.steps
+
                 activityDao.updateActivityByDate(waterGlasses, sleepHours, exerciseCalories, steps, date)
             }
-            else{
-                // If the activity doesn't exist, save it as a new entry
+            else {
                 saveActivity(activityItems, date)
             }
         }

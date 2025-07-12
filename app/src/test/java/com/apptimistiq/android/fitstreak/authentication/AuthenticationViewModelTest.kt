@@ -20,9 +20,9 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Before
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 
 @ExperimentalCoroutinesApi
 class AuthenticationViewModelTest {
@@ -232,9 +232,9 @@ class AuthenticationViewModelTest {
     @Test
     fun `finalizeAuthentication - when user exists - returns and saves logged in state`() = runTest {
         // Given
-        val mockUser = mock(FirebaseUser::class.java)
-        `when`(mockUser.uid).thenReturn("firebase-uid")
-        `when`(mockUser.displayName).thenReturn("Firebase User")
+        val mockUser = mockk<FirebaseUser>()
+        every { mockUser.uid } returns "firebase-uid"
+        every { mockUser.displayName } returns "Firebase User"
         fakeAuthDataSource.setFirebaseUser(mockUser)
 
         // When

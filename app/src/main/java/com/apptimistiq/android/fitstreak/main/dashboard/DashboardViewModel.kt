@@ -44,6 +44,7 @@ class DashboardViewModel @Inject constructor(
 
     val userInitialsState: StateFlow<String> = dataSource.getCurrentUserState()
         .map { getInitialsFromName(it.userName) }
+        .catch { emit("NA") } // Gracefully handle errors
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -76,20 +77,11 @@ class DashboardViewModel @Inject constructor(
     val navigateBackToDashboard: StateFlow<Boolean> = _navigateBackToDashboard
 
     private val _currentEditInfoType = MutableStateFlow(GoalUserInfo.DEFAULT)
-    /**
-     * StateFlow that provides the current value for the goal or user info being edited.
-     * It dynamically switches its data source based on the type of information being edited.
-     */
-    val goalInfoVal: StateFlow<Int> = _currentEditInfoType.flatMapLatest { goalUserInfoType ->
-        dataSource.getCurrentGoalUserInfo(goalUserInfoType)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = 0
-    )
 
     private val _displayedGoalValue = MutableStateFlow(0)
     val displayedGoalValue: StateFlow<Int> = _displayedGoalValue
+
+    private var isEditValueInitialized = false
 
     //endregion
 
@@ -142,6 +134,26 @@ class DashboardViewModel @Inject constructor(
     }
 
     /**
+     * Sets the current goal type for the editing screen.
+     * This should be called by the editing fragment when it's created.
+     *
+     * @param goal_info_type The type of goal or user info to be edited
+     */
+    fun setCurrentGoalTypeForEditing(goal_info_type: GoalUserInfo) {
+        if (!isEditValueInitialized) {
+            _currentEditInfoType.value = goal_info_type
+            viewModelScope.launch {
+                _displayedGoalValue.value = dataSource.getCurrentGoalUserInfo(goal_info_type).first()
+            }
+            isEditValueInitialized = true
+        }
+    }
+
+    fun resetEditState() {
+        isEditValueInitialized = false
+    }
+
+    /**
      * Triggers navigation back to the dashboard screen.
      */
     private fun navigateBackDashboardFragment() {
@@ -184,6 +196,7 @@ class DashboardViewModel @Inject constructor(
      */
     fun navigateBackDashboardFragmentComplete() {
         _navigateBackToDashboard.update { false }
+        isEditValueInitialized = false // Reset the flag
     }
     //endregion
     //region Data Persistence

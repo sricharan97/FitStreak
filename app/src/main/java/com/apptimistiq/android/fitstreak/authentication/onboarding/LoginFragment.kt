@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
@@ -25,32 +26,29 @@ import javax.inject.Inject
 
 /**
  * LoginFragment handles the authentication flow for the application.
- *
- * This fragment:
- * 1. Presents the initial login screen to the user
- * 2. Launches the FirebaseUI authentication flow when the user clicks the login button
- * 3. Handles authentication results and navigates to appropriate destinations based on
- *    whether the user has completed the onboarding process
- *
- * Uses Firebase Authentication UI library for handling different authentication methods.
  */
 class LoginFragment : Fragment() {
 
     //region Properties
-
-
     /** ViewModel factory provided by Dagger DI */
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     /** Shared authentication view model */
     private val viewModel by activityViewModels<AuthenticationViewModel> { viewModelFactory }
-    
+
     /** Contract for handling Firebase Auth UI results */
-    private val signInLauncher = 
+    private val signInLauncher =
         registerForActivityResult(FirebaseAuthUIActivityResultContract()) { res ->
             this.onSignInResult(res)
         }
+
+    /**
+     * Flag to control whether to automatically launch sign-in flow.
+     * Set to false during tests to avoid timing issues.
+     */
+    @VisibleForTesting
+    internal var shouldAutoLaunchSignIn = true
     //endregion
 
     //region Constants
@@ -61,23 +59,16 @@ class LoginFragment : Fragment() {
     //endregion
 
     //region Lifecycle Methods
-    /**
-     * Injects dependencies when fragment is attached to activity
-     */
     override fun onAttach(context: Context) {
         super.onAttach(context)
         (requireActivity().application as FitApp).appComponent.loginComponent().create()
             .inject(this)
     }
 
-    /**
-     * Inflates the fragment layout and initializes data binding
-     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         // Return a simple FrameLayout. FirebaseUI will draw over it.
         val frameLayout = FrameLayout(requireContext())
         frameLayout.layoutParams = ViewGroup.LayoutParams(
@@ -87,26 +78,22 @@ class LoginFragment : Fragment() {
         return frameLayout
     }
 
-    /**
-     * Sets up UI interactions and observes view model state
-     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        launchSignInFlow()
-
+        // Only launch sign-in flow automatically if not in test mode
+        if (shouldAutoLaunchSignIn) {
+            launchSignInFlow()
+        }
     }
     //endregion
-
 
     //region Authentication
     /**
      * Initiates the Firebase authentication UI flow
-     *
-     * Configures available authentication providers (Email, Phone, Google)
-     * and launches the authentication UI with a custom layout
      */
-    private fun launchSignInFlow() {
+    @VisibleForTesting
+    internal fun launchSignInFlow() {
         // Configure authentication providers
         val providers = arrayListOf(
             AuthUI.IdpConfig.EmailBuilder().build(),
@@ -137,17 +124,13 @@ class LoginFragment : Fragment() {
     /**
      * Handles the result of the sign-in flow
      *
-     * Based on the authentication result and the user's onboarding status,
-     * navigates to the appropriate destination
-     *
      * @param result The Firebase authentication result
      */
-    private fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
+    @VisibleForTesting
+    internal fun onSignInResult(result: FirebaseAuthUIAuthenticationResult) {
         val response = result.idpResponse
-        //binding.progressOverlay.visibility = View.VISIBLE // Show loading overlay immediately
-        
-        if (result.resultCode == RESULT_OK) {
 
+        if (result.resultCode == RESULT_OK) {
             viewLifecycleOwner.lifecycleScope.launch {
                 try{
                     val userStateInfo = viewModel.finalizeAuthentication() // Fetches updated UserStateInfo
@@ -163,7 +146,6 @@ class LoginFragment : Fragment() {
                     // Handle error (e.g., show a message to the user)
                 }
             }
-
         } else {
             // This block is executed when the user presses the back button from the
             // sign-in screen or if there is an error.
@@ -181,18 +163,11 @@ class LoginFragment : Fragment() {
     //endregion
 
     //region Navigation
-    /**
-     * Navigates to the main activity after successful authentication
-     * for users who have already completed onboarding
-     */
     private fun navigateHomeAfterSuccessfulLogin() {
         findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToHomeTransitionFragment())
         Log.d(TAG, "Navigation to home transition fragment is called")
     }
 
-    /**
-     * Navigates to the onboarding flow for new users who need to complete setup
-     */
     private fun navigateOnboardingFlow() {
         findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToWelcomeFragment())
     }

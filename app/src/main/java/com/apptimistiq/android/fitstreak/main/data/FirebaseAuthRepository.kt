@@ -11,10 +11,10 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseAuthRepository @Inject constructor(
-    private val userProfileDataSource: UserProfileDataSource
+    private val userProfileDataSource: UserProfileDataSource,
+    private val firebaseAuth: FirebaseAuth
 ) : AuthDataSource {
 
-    private val firebaseAuth = FirebaseAuth.getInstance()
 
     override fun getCurrentFirebaseUser(): FirebaseUser? {
         return firebaseAuth.currentUser
