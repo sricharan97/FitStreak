@@ -2,6 +2,7 @@ package com.apptimistiq.android.fitstreak.main
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -61,6 +62,25 @@ class MainActivity : AppCompatActivity() {
 
         initializeAuthState()
         observeUIState()
+        setupCustomBackPress()
+    }
+
+    private fun setupCustomBackPress() {
+        val onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val currentDestinationId = navController.currentDestination?.id
+                if (currentDestinationId == R.id.daily_progress_fragment) {
+                    finish()
+                } else if (currentDestinationId == R.id.dashboardFragment || currentDestinationId == R.id.recipeFragment) {
+                    navController.navigate(R.id.daily_progress_fragment)
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                    isEnabled = true
+                }
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
     }
 
     private fun initializeAuthState() {

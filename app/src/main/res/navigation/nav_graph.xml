@@ -62,7 +62,7 @@
             android:id="@+id/action_home_dest_to_loginFragment"
             app:destination="@id/loginFragment"
             app:launchSingleTop="true"
-            app:popUpTo="@id/daily_progress_fragment" 
+            app:popUpTo="@id/daily_progress_fragment"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_home_dest_to_editActivityFragment"
@@ -72,14 +72,35 @@
             app:launchSingleTop="true"
             app:popUpTo="@id/daily_progress_fragment"
             app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_daily_progress_fragment_to_recipeFragment"
+            app:destination="@id/recipeFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_daily_progress_fragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
-    
+
     <fragment
         android:id="@+id/recipeFragment"
         android:name="com.apptimistiq.android.fitstreak.main.recipe.RecipesFragment"
         android:label="@string/recipe_dest_label"
         app:launchSingleTop="true"
-        tools:layout="@layout/fragment_recipes" />
+        tools:layout="@layout/fragment_recipes">
+        <action
+            android:id="@+id/action_recipeFragment_to_daily_progress_fragment"
+            app:destination="@id/daily_progress_fragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_recipeFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/dashboardFragment"
         android:name="com.apptimistiq.android.fitstreak.main.dashboard.DashboardFragment"
@@ -95,6 +116,16 @@
             android:id="@+id/action_dashboard_dest_to_goalEditFragment"
             app:destination="@id/goalEditFragment"
             app:popUpTo="@id/dashboardFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_daily_progress_fragment"
+            app:destination="@id/daily_progress_fragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_recipeFragment"
+            app:destination="@id/recipeFragment"
+            app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment
