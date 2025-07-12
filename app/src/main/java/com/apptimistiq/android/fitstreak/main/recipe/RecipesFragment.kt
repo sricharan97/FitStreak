@@ -107,6 +107,16 @@ class RecipesFragment : Fragment() {
         })
 
         binding.recipeParentRecyclerView.adapter = recyclerAdapter
+
+        // Set layout manager based on orientation
+        val isLandscape = resources.getBoolean(R.bool.is_landscape)
+        if (isLandscape) {
+            binding.recipeParentRecyclerView.layoutManager =
+                androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+        } else {
+            binding.recipeParentRecyclerView.layoutManager =
+                androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        }
     }
 
     private fun setupChips() {

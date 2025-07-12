@@ -263,6 +263,16 @@ class DailyProgressFragment : Fragment() {
             viewModel.navigateToEditActivity(it)
         })
         binding.recyclerView.adapter = recyclerAdapter
+
+        // Set layout manager based on orientation
+        val isLandscape = resources.getBoolean(R.bool.is_landscape)
+        if (isLandscape) {
+            binding.recyclerView.layoutManager =
+                androidx.recyclerview.widget.GridLayoutManager(requireContext(), 2)
+        } else {
+            binding.recyclerView.layoutManager =
+                androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+        }
     }
     
     /**
