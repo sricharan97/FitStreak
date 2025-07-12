@@ -110,7 +110,7 @@ class EditActivityFragment : Fragment() {
         // Set up UI text based on activity type
         when (arguments?.get("act_type")) {
             ActivityType.SLEEP -> {
-                binding.activityEditType.text = resources.getString(R.string.edit_sleep)
+                binding.activityEditType.text = resources.getString(R.string.update_sleep)
                 binding.activityValTag.text = resources.getString(R.string.edit_sleep_tag)
             }
 
@@ -123,6 +123,9 @@ class EditActivityFragment : Fragment() {
             ActivityType.WATER -> {
                 binding.activityEditType.text = resources.getString(R.string.edit_water)
                 binding.activityValTag.text = resources.getString(R.string.edit_water_tag)
+            }
+            else -> {
+                // Do nothing for other cases
             }
         }
 

@@ -73,12 +73,13 @@
 
     <string name="edit_steps">Add steps</string>
     <string name="edit_sleep">Add sleep</string>
-    <string name="edit_exercise">Add calories</string>
+    <string name="update_sleep">Update sleep</string>
+    <string name="edit_sleep_tag">Enter sleep in hours</string>
+    <string name="edit_exercise">Add exercise</string>
+    <string name="edit_exercise_tag">Enter calories burnt</string>
     <string name="edit_water">Add water</string>
     <string name="edit_steps_tag">steps</string>
     <string name="edit_water_tag">litres</string>
-    <string name="edit_exercise_tag">Calories</string>
-    <string name="edit_sleep_tag">hours</string>
     <string name="activity_permission_denied_transition_message">The essential permission to read and track your Activity information was denied. Do you want to rethink that decision?</string>
     <string name="retry_permission_button_text">Grant Permission</string>
     <string name="sleep">Sleep</string>
