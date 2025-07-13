@@ -18,7 +18,7 @@ import dagger.Subcomponent
  * Extends functionality by including modules required for transitions 
  * and other main activity related dependencies.
  */
-@Subcomponent(modules = [HomeTransitionModule::class, AuthenticationModule::class, SplashViewModelModule::class])
+@Subcomponent(modules = [HomeTransitionModule::class, AuthenticationModule::class])
 interface MainActivityComponent {
 
     /**
