@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.apptimistiq.android.fitstreak.main.dashboard.DashboardViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/fragment_top_padding"
+        android:paddingBottom="@dimen/fragment_bottom_padding"
+        android:animateLayoutChanges="true">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+        <TextView
+            android:id="@+id/edit_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@+id/edit_type_descp"
+            app:layout_constraintEnd_toStartOf="@+id/guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Steps" />
+
+        <TextView
+            android:id="@+id/edit_type_descp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@+id/goal_tag"
+            app:layout_constraintEnd_toStartOf="@+id/guideline"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_type"
+            tools:text="Sample description for now" />
+
+        <TextView
+            android:id="@+id/goal_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edit_type_descp"
+            tools:text="Steps a day" />
+
+
+        <LinearLayout
+            android:id="@+id/goal_value_seg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/edit_goal_set_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/guideline"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed">
+
+            <Button
+                android:id="@+id/goal_decrement"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:backgroundTint="?attr/colorTertiaryContainer"
+                android:gravity="center"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:onClick="@{() -> viewModel.decrementGoalInfoValue()}"
+                android:text="-"
+                android:textColor="?attr/colorOnTertiaryContainer"
+                android:textSize="40sp" />
+
+            <TextView
+                android:id="@+id/goal_value"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="@{String.valueOf(viewModel.displayedGoalValue)}"
+                android:textSize="40sp" />
+
+            <Button
+                android:id="@+id/goal_increment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:backgroundTint="?attr/colorTertiaryContainer"
+                android:gravity="center"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
+                android:onClick="@{() -> viewModel.incrementGoalInfoValue()}"
+                android:text="+"
+                android:textColor="?attr/colorOnTertiaryContainer"
+                android:textSize="40sp" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/edit_goal_set_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="?attr/colorTertiaryContainer"
+            android:onClick="@{() -> viewModel.saveGoalInfo()}"
+            android:text="Set"
+            android:textColor="?attr/colorOnTertiaryContainer"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/goal_value_seg"
+            app:layout_constraintStart_toStartOf="@+id/goal_value_seg"
+            app:layout_constraintTop_toBottomOf="@id/goal_value_seg" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
