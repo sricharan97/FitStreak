@@ -26,4 +26,5 @@
     <dimen name="recipe_image_size">100dp</dimen>
     <dimen name="dashboard_user_info_card_height">160dp</dimen>
     <dimen name="dashboard_activity_goals_card_height">280dp</dimen>
+    <dimen name="fragment_top_padding">72dp</dimen>
 </resources>

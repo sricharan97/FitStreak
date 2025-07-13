@@ -17,6 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
+        android:paddingTop="@dimen/fragment_top_padding"
+        android:paddingBottom="@dimen/fragment_bottom_padding"
         tools:context="com.apptimistiq.android.fitstreak.main.progressTrack.DailyProgressFragment">
 
         <!-- TODO: Modify the recyclerview layout -->

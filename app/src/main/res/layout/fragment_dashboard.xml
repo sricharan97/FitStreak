@@ -14,6 +14,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingTop="@dimen/fragment_top_padding"
+        android:paddingBottom="@dimen/fragment_bottom_padding"
         tools:context=".main.dashboard.DashboardFragment">
 
         <!-- Fixed Header Section -->
