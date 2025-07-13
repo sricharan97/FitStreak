@@ -46,11 +46,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|center_vertical"
+                android:backgroundTint="?attr/colorTertiaryContainer"
                 android:gravity="center"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
                 android:onClick="@{() -> viewModel.decrementActivityValue()}"
                 android:text="-"
+                android:textColor="?attr/colorOnTertiaryContainer"
                 android:textSize="40sp" />
 
             <TextView
@@ -69,11 +71,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|center_vertical"
+                android:backgroundTint="?attr/colorTertiaryContainer"
                 android:gravity="center"
                 android:minWidth="48dp"
                 android:minHeight="48dp"
                 android:onClick="@{() -> viewModel.incrementActivityValue()}"
                 android:text="+"
+                android:textColor="?attr/colorOnTertiaryContainer"
                 android:textSize="40sp" />
 
 
@@ -94,8 +98,10 @@
             android:id="@+id/edit_goal_set_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="?attr/colorTertiaryContainer"
             android:onClick="@{() -> viewModel.updateUserActivityVal()}"
             android:text="Set"
+            android:textColor="?attr/colorOnTertiaryContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

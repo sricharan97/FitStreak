@@ -14,6 +14,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="@dimen/fragment_bottom_padding"
         android:animateLayoutChanges="true">
 
         <TextView
@@ -31,9 +32,15 @@
 
         <TextView
             android:id="@+id/edit_type_descp"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="24sp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:gravity="center"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -52,15 +59,19 @@
             app:layout_constraintTop_toBottomOf="@id/edit_type_descp"
             app:layout_constraintVertical_bias="0.4">
 
-            <TextView
+            <Button
                 android:id="@+id/goal_decrement"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start|center_vertical"
-                android:clickable="true"
+                android:backgroundTint="?attr/colorTertiaryContainer"
+                android:gravity="center"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
                 android:onClick="@{() -> viewModel.decrementGoalInfoValue()}"
                 android:text="-"
-                android:textSize="32sp" />
+                android:textColor="?attr/colorOnTertiaryContainer"
+                android:textSize="40sp" />
 
             <TextView
                 android:id="@+id/goal_value"
@@ -72,15 +83,19 @@
                 android:text="@{String.valueOf(viewModel.displayedGoalValue)}"
                 android:textSize="40sp" />
 
-            <TextView
+            <Button
                 android:id="@+id/goal_increment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|center_vertical"
-                android:clickable="true"
+                android:backgroundTint="?attr/colorTertiaryContainer"
+                android:gravity="center"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
                 android:onClick="@{() -> viewModel.incrementGoalInfoValue()}"
                 android:text="+"
-                android:textSize="32sp" />
+                android:textColor="?attr/colorOnTertiaryContainer"
+                android:textSize="40sp" />
 
 
         </LinearLayout>
@@ -100,8 +115,10 @@
             android:id="@+id/edit_goal_set_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:backgroundTint="?attr/colorTertiaryContainer"
             android:onClick="@{() -> viewModel.saveGoalInfo()}"
             android:text="Set"
+            android:textColor="?attr/colorOnTertiaryContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
