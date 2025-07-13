@@ -108,12 +108,28 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
+            android:visibility="@{viewModel.isQuotaExceeded ? View.GONE : View.VISIBLE}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/diet_type_scroll_view"
             app:listData="@{viewModel.recipeTrackList}" />
+
+        <TextView
+            android:id="@+id/quota_exceeded_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="32dp"
+            android:gravity="center"
+            android:text="Daily quota for viewing recipes has been exhausted. Please try again tomorrow."
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="@{viewModel.isQuotaExceeded ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/diet_type_scroll_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

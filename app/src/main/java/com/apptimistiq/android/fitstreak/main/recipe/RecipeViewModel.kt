@@ -84,6 +84,10 @@ class RecipeViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    // Add error state for quota exceeded
+    private val _isQuotaExceeded = MutableStateFlow(false)
+    val isQuotaExceeded: StateFlow<Boolean> = _isQuotaExceeded
+
     /**
      * Publicly exposed StateFlow for current diet type
      */
@@ -114,7 +118,8 @@ class RecipeViewModel @Inject constructor(
     private val breakfastRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Breakfast]!!)
-                .catch {
+                .catch { exception ->
+                    handleRecipeError(exception)
                     emit(RecipeTrackUiState(
                         recipeType = mealTypeMap[MealType.Breakfast]!!,
                         recipes = emptyList()))
@@ -127,7 +132,8 @@ class RecipeViewModel @Inject constructor(
     private val mainCourseRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.MainCourse]!!)
-                .catch {
+                .catch { exception ->
+                    handleRecipeError(exception)
                     emit(RecipeTrackUiState(
                         recipeType = mealTypeMap[MealType.MainCourse]!!,
                         recipes = emptyList()))
@@ -140,7 +146,8 @@ class RecipeViewModel @Inject constructor(
     private val snackRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Snack]!!)
-                .catch {
+                .catch { exception ->
+                    handleRecipeError(exception)
                     emit(RecipeTrackUiState(
                         recipeType = mealTypeMap[MealType.Snack]!!,
                         recipes = emptyList()))
@@ -153,7 +160,8 @@ class RecipeViewModel @Inject constructor(
     private val saladRecipes: Flow<RecipeTrackUiState> =
         _menuItemSelection.flatMapLatest { dietType ->
             recipeRemoteDataSource.getRecipes(dietType, mealTypeMap[MealType.Salad]!!)
-                .catch {
+                .catch { exception ->
+                    handleRecipeError(exception)
                     emit(RecipeTrackUiState(
                         recipeType = mealTypeMap[MealType.Salad]!!,
                         recipes = emptyList()))
@@ -207,5 +215,12 @@ class RecipeViewModel @Inject constructor(
      */
     fun navigateToRecipeUrlCompleted() {
         _currentRecipeId.update { 0 }
+    }
+
+    /**
+     * Handles recipe API errors by setting quota exceeded state.
+     */
+    private fun handleRecipeError(exception: Throwable) {
+        _isQuotaExceeded.value = true
     }
 }
