@@ -150,8 +150,8 @@ A comprehensive Android fitness tracking application built with modern Android d
    - Wait for Gradle sync to complete
 
 3. **Configuration Files**
-   - `apikey.properties` - Contains Spoonacular API key (will be provided when submitted for review)
-   - `app/google-services.json` - Firebase configuration (already included)
+   - `apikey.properties` - Contains Spoonacular API key (Replace the text "Replace with the api key provided" for SECRET with your api key)
+   - `app/google-services.json` - Firebase configuration (Replace the text "Place your api key here" for current_key with your api key)
    - All necessary configurations are provided for review purposes
 
 4. **Build and Run**
