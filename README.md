@@ -3,6 +3,16 @@
 
 A comprehensive Android fitness tracking application built with modern Android development practices including MVVM architecture, Dagger dependency injection, and Material Design 3.
 
+## Video Walkthrough
+
+### Portrait Mode (Light Theme)
+[![FitStreak App Demo](https://img.youtube.com/vi/vFsViQ7keRs/maxresdefault.jpg)](https://youtube.com/shorts/vFsViQ7keRs?feature=share)
+
+### Landscape Mode (Dark Theme)
+[![FitStreak App Demo](https://img.youtube.com/vi/DfEHjU2pDtI/maxresdefault.jpg)](https://youtube.com/shorts/DfEHjU2pDtI?feature=share)
+
+*Complete app walkthroughs showcasing authentication, dashboard, recipe discovery, and progress tracking features across different orientations and themes.
+
 ### **Android UI/UX Requirements**
 
 #### **Navigable Interface with Multiple Screens**
